@@ -1,0 +1,22 @@
+# Carpetas generadas por Maven al compilar
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Configuraciones locales de VS Code e IDEs
+.vscode/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs locales
+*.log
