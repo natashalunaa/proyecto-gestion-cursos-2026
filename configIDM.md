@@ -17,11 +17,11 @@ Ingresar a la pestaña **Users** -> **Create user**, crear los siguientes 5 usua
 
 | ID de Usuario | Nombre | Apellido | Contraseña | Grupo Asignado | mail |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `jefe_admin` | Jefe | Administrativo | `1234` | `Administracion` | jefe_admin@example.com |
-| `admin2` | Administrativo | Dos | `1234` | `Administracion` | admin2@example.com |
-| `jefe_docente` | Jefe | Docente | `1234` | `Docentes` | jefe_docente@example.com |
-| `docente2` | Docente | Dos | `1234` | `Docentes` | docente2@example.com |
-| `docente3` | Docente | Tres | `1234` | `Docentes` | docente3@example.com |
+| `jefe_admin` | Jefe | Administrativo | `jefe_admin#` | `Administracion` | jefe_admin@example.com |
+| `admin2` | Administrativo | Dos | `admin2#` | `Administracion` | admin2@example.com |
+| `jefe_docente` | Jefe | Docente | `jefe_docente#` | `Docentes` | jefe_docente@example.com |
+| `docente2` | Docente | Dos | `docente2#` | `Docentes` | docente2@example.com |
+| `docente3` | Docente | Tres | `docente3#` | `Docentes` | docente3@example.com |
 
 ---
 
