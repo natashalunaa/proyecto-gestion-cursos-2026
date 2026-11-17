@@ -10,4 +10,4 @@ Proyecto de automatización de procesos de negocio para la solicitud, evaluació
 
 ## Guías de Configuración e Instalación
 1. [Configuración de Base de Datos (PostgreSQL)](./CursoFlowable/docs/base-de-datos.md)
-2. [Configuración de Usuarios y Grupos (Flowable IDM)](./docs/flowable-idm.md)
+2. [Configuración de Usuarios y Grupos (Flowable IDM)](./CursoFlowable/docs/flowable-idm.md)
