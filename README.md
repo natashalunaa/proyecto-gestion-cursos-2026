@@ -9,5 +9,5 @@ Proyecto de automatización de procesos de negocio para la solicitud, evaluació
 * `/src`: Código fuente de la aplicación web y servicios.
 
 ## Guías de Configuración e Instalación
-1. [Configuración de Base de Datos (PostgreSQL)](./docs/base-de-datos.md)
+1. [Configuración de Base de Datos (PostgreSQL)](./CursoFlowable/docs/base-de-datos.md)
 2. [Configuración de Usuarios y Grupos (Flowable IDM)](./docs/flowable-idm.md)
