@@ -1,27 +1,45 @@
+
 package curso.flowable;
 
+import org.flowable.engine.RuntimeService;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
+import org.flowable.engine.impl.context.Context;
 
-
-//implements JavaDelegate: le indica a Flowable que esta clase puede ejecutarse como una Service Task.
-public class CalcularCursosActivos implements JavaDelegate {  
+public class CalcularCursosActivos implements JavaDelegate {
 
     @Override
+    public void execute(DelegateExecution execution) {
 
-    //execute(...): es el método que Flowable ejecutará automáticamente cuando el proceso llegue a la tarea.
-    public void execute(DelegateExecution execution) {         
+        RuntimeService runtimeService = Context
+                .getProcessEngineConfiguration()
+                .getRuntimeService();
 
-        // Valor de prueba, hasta implementar la consulta real
-        int cantidadCursosActivos = 0;
+        String processDefinitionKey = Context
+                .getProcessEngineConfiguration()
+                .getRepositoryService()
+                .getProcessDefinition(execution.getProcessDefinitionId())
+                .getKey();
 
-        // Guardamos el resultado como variable del proceso
-        execution.setVariable(
-            "cantidadCursosActivos", cantidadCursosActivos
-        );
+        // Contar las otras instancias activas
+        long cantidad = runtimeService
+                .createProcessInstanceQuery()
+                .processDefinitionKey(processDefinitionKey)
+                .active()
+                .list()
+                .stream()
+                .filter(instancia ->
+                        !instancia.getId().equals(
+                                execution.getProcessInstanceId()
+                        )
+                )
+                .count();
+
+        // Guardar el resultado para la DMN
+        execution.setVariable("cantidadCursosActivos", cantidad);
 
         System.out.println(
-            "Cantidad de cursos activos: " + cantidadCursosActivos
+                "Otras instancias activas: " + cantidad
         );
     }
 }

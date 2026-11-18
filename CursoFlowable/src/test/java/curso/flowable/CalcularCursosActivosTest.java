@@ -56,7 +56,7 @@ public class CalcularCursosActivosTest {
             );
 
             // Comprobar que el valor sea 0
-            assertEquals(0, resultado);
+            assertEquals(0L, resultado);
 
             System.out.println(
                     "PRUEBA EXITOSA: cantidadCursosActivos = " + resultado
