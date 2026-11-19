@@ -1,4 +1,10 @@
-# Carpetas generadas por Maven al compilar
+
+# ==========================================
+# PROYECTO GESTIÓN DE CURSOS
+# Java + Spring Boot + Flowable + PostgreSQL
+# ==========================================
+
+# Maven - archivos generados al compilar
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -6,7 +12,7 @@ pom.xml.versionsBackup
 pom.xml.next
 release.properties
 
-# Configuraciones locales de VS Code e IDEs
+# IDEs y editores
 .vscode/
 .idea/
 *.iml
@@ -14,9 +20,36 @@ release.properties
 .project
 .settings/
 
-# Archivos de sistema operativo
+# Sistema operativo
 .DS_Store
 Thumbs.db
 
-# Logs locales
+# Logs y archivos de errores
 *.log
+error_arranque.txt
+
+# Bases de datos y respaldos
+*.dump
+*.backup
+*.sql
+
+# Credenciales y configuraciones locales
+.env
+.env.*
+!.env.example
+CursoFlowable/src/main/resources/application.properties
+
+# Archivos Java compilados
+*.class
+
+# Archivos JAR generados
+*.jar
+
+# Archivos temporales
+*.bak
+*.tmp
+*.temp
+
+# Archivos de pruebas locales
+*.pid
+hs_err_pid*
