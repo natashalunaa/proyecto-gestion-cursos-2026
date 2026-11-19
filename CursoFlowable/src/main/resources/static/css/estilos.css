@@ -1,0 +1,241 @@
+
+/* ===================================
+   ESTILOS GENERALES
+=================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f5f7fa;
+    color: #263648;
+}
+
+.contenedor {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+
+/* ===================================
+   MENÚ SUPERIOR
+=================================== */
+
+.encabezado {
+    background-color: #173b60;
+    padding: 20px 0;
+}
+
+.navegacion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.marca {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    font-size: 21px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.logo {
+    font-size: 30px;
+}
+
+.menu {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.menu a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.menu a:hover {
+    text-decoration: underline;
+}
+
+.boton-login {
+    border: 1px solid white;
+    border-radius: 7px;
+    padding: 11px 18px;
+}
+
+
+/* ===================================
+   BANNER PRINCIPAL
+=================================== */
+
+.banner {
+    width: 100%;
+    min-height: 480px;
+
+    background-color: #eaf4ff;
+    background-image: url("/img/capacitacion.png");
+    background-size: 100% auto;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+
+.banner-contenido {
+    display: flex;
+    align-items: center;
+    min-height: 480px;
+}
+
+.banner-texto {
+    width: 48%;
+    padding: 45px 0;
+}
+
+.banner h1 {
+    color: #173b60;
+    font-size: 46px;
+    line-height: 1.15;
+    margin: 0 0 25px;
+}
+
+.banner h1 span {
+    color: #1769c2;
+}
+
+.banner p {
+    color: #263648;
+    font-size: 18px;
+    line-height: 1.7;
+    margin: 0 0 30px;
+    max-width: 500px;
+}
+
+.boton-principal {
+    display: inline-block;
+    background-color: #1769b1;
+    color: white;
+    padding: 15px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.boton-principal:hover {
+    background-color: #104f88;
+}
+
+
+/* ===================================
+   TARJETAS DE SERVICIOS
+=================================== */
+
+.servicios {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding-top: 55px;
+    padding-bottom: 65px;
+}
+
+.tarjeta {
+    background-color: white;
+    border-radius: 10px;
+    padding: 28px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.07);
+}
+
+.tarjeta-icono {
+    font-size: 30px;
+    margin-bottom: 15px;
+}
+
+.tarjeta h2 {
+    color: #173b60;
+    font-size: 20px;
+    margin-top: 0;
+}
+
+.tarjeta p {
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+
+/* ===================================
+   PIE DE PÁGINA
+=================================== */
+
+footer {
+    background-color: #173b60;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+footer p {
+    margin: 0;
+}
+
+
+/* NUEVA COMBINACIÓN DE COLORES */
+
+body {
+    background-color: #F7F9FC;
+    color: #334155;
+}
+
+.encabezado {
+    background-color: #1B3B6F;
+}
+
+.boton-login {
+    border: 1px solid #9EB3C2;
+}
+
+.banner h1 {
+    color: #21295C;
+}
+
+.banner h1 span {
+    color: #065A82;
+}
+
+.banner p {
+    color: #334155;
+}
+
+.boton-principal {
+    background-color: #1C7293;
+    color: white;
+}
+
+.boton-principal:hover {
+    background-color: #065A82;
+}
+
+.tarjeta {
+    background-color: white;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(33, 41, 92, 0.08);
+}
+
+.tarjeta h2 {
+    color: #21295C;
+}
+
+footer {
+    background-color: #1B3B6F;
+}
+

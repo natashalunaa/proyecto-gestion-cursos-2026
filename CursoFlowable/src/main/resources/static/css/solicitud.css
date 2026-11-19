@@ -1,0 +1,130 @@
+
+/* ===================================
+   PÁGINA DE SOLICITUD
+=================================== */
+
+.seccion-solicitud {
+    max-width: 850px;
+    margin: 55px auto 75px;
+}
+
+/* TÍTULO */
+
+.titulo-solicitud {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.titulo-solicitud h1 {
+    color: #173b60;
+    font-size: 34px;
+    margin: 0 0 15px;
+}
+
+.titulo-solicitud p {
+    color: #5c6b79;
+    font-size: 17px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+
+/* ===================================
+   FORMULARIO
+=================================== */
+
+#formularioSolicitud {
+    background-color: white;
+    padding: 35px 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+}
+
+/* SECCIONES */
+
+#formularioSolicitud fieldset {
+    border: none;
+    padding: 0;
+    margin: 0 0 35px;
+    min-width: 0;
+}
+
+#formularioSolicitud legend {
+    color: #173b60;
+    font-size: 21px;
+    font-weight: bold;
+    width: 100%;
+    padding-bottom: 12px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid #dce5ed;
+}
+
+
+/* ===================================
+   CAMPOS
+=================================== */
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 22px;
+}
+
+.campo label {
+    color: #34495e;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 9px;
+}
+
+.campo input,
+.campo textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #ccd7e0;
+    border-radius: 7px;
+    background-color: white;
+    color: #263648;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+}
+
+.campo input:focus,
+.campo textarea:focus {
+    outline: none;
+    border-color: #1769b1;
+    box-shadow: 0 0 0 3px rgba(23, 105, 177, 0.12);
+}
+
+.campo input::placeholder,
+.campo textarea::placeholder {
+    color: #98a5b3;
+}
+
+.campo textarea {
+    resize: vertical;
+}
+
+/* DOS CAMPOS EN UNA FILA */
+
+.fila-campos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+
+/* ===================================
+   BOTÓN DE ENVÍO
+=================================== */
+
+.acciones-formulario {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.acciones-formulario button {
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+}

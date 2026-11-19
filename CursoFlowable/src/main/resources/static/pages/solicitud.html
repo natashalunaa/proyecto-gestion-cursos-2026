@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Solicitar capacitación</title>
+
+    <!-- Estilos generales -->
+    <link rel="stylesheet" href="/css/estilos.css">
+
+    <!-- Estilos del formulario -->
+    <link rel="stylesheet" href="/css/solicitud.css">
+</head>
+
+<body>
+
+    <!-- ENCABEZADO -->
+    <header class="encabezado">
+
+        <div class="contenedor navegacion">
+
+            <a href="/index.html" class="marca">
+                <span class="logo">🎓</span>
+                <span>Institución de Capacitación</span>
+            </a>
+
+            <nav class="menu">
+
+                <a href="/index.html">Inicio</a>
+
+                <a href="/pages/solicitud.html">
+                    Solicitar capacitación
+                </a>
+
+                <a href="/pages/login.html"
+                   class="boton-login">
+                    Iniciar sesión
+                </a>
+
+            </nav>
+
+        </div>
+
+    </header>
+
+
+    <!-- CONTENIDO -->
+    <main class="contenedor">
+
+        <section class="seccion-solicitud">
+
+            <div class="titulo-solicitud">
+
+                <h1>Solicitar una capacitación</h1>
+
+                <p>
+                    Completá el formulario con los datos
+                    de tu empresa y la capacitación que
+                    necesitás.
+                </p>
+
+            </div>
+
+
+            <!-- FORMULARIO -->
+            <form id="formularioSolicitud">
+
+                <!-- DATOS DE LA EMPRESA -->
+                <fieldset>
+
+                    <legend>Datos de la empresa</legend>
+
+                    <div class="campo">
+
+                        <label for="empresa">
+                            Nombre de la empresa
+                        </label>
+
+                        <input
+                            type="text"
+                            id="empresa"
+                            name="empresa"
+                            required>
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label for="contacto">
+                            Persona de contacto
+                        </label>
+
+                        <input
+                            type="text"
+                            id="contacto"
+                            name="contacto"
+                            required>
+
+                    </div>
+
+
+                    <div class="fila-campos">
+
+                        <div class="campo">
+
+                            <label for="email">
+                                Correo electrónico
+                            </label>
+
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                required>
+
+                        </div>
+
+
+                        <div class="campo">
+
+                            <label for="telefono">
+                                Teléfono
+                            </label>
+
+                            <input
+                                type="tel"
+                                id="telefono"
+                                name="telefono"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                </fieldset>
+
+
+                <!-- DATOS DE LA CAPACITACIÓN -->
+                <fieldset>
+
+                    <legend>Datos de la capacitación</legend>
+
+                    <div class="campo">
+
+                        <label for="tematica">
+                            Temática de la capacitación
+                        </label>
+
+                        <input
+                            type="text"
+                            id="tematica"
+                            name="tematica"
+                            placeholder="Ej: Excel avanzado"
+                            required>
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label for="descripcion">
+                            Descripción de la capacitación
+                        </label>
+
+                        <textarea
+                            id="descripcion"
+                            name="descripcion"
+                            rows="4"
+                            placeholder="Describí las necesidades de capacitación de tu empresa"
+                            required></textarea>
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label for="participantes">
+                            Cantidad estimada de participantes
+                        </label>
+
+                        <input
+                            type="number"
+                            id="participantes"
+                            name="participantes"
+                            min="1"
+                            step="1"
+                            required>
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label for="fechas">
+                            Fechas preferidas
+                        </label>
+
+                        <textarea
+                            id="fechas"
+                            name="fechas"
+                            rows="3"
+                            placeholder="Ej: Primera quincena de diciembre"
+                            required></textarea>
+
+                    </div>
+
+                </fieldset>
+
+
+                <!-- BOTÓN -->
+                <div class="acciones-formulario">
+
+                    <button
+                        type="submit"
+                        class="boton-principal">
+                        Enviar solicitud
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+    </main>
+
+
+    <!-- PIE DE PÁGINA -->
+    <footer>
+        <p>Institución de Capacitación - 2026</p>
+    </footer>
+
+
+    <!-- VALIDACIÓN TEMPORAL -->
+    <script>
+
+        const formulario = document.getElementById(
+            "formularioSolicitud"
+        );
+
+        formulario.addEventListener("submit", function(event) {
+
+            event.preventDefault();
+
+            alert(
+                "Los datos del formulario son válidos. " +
+                "Todavía no se enviaron al servidor."
+            );
+
+        });
+
+    </script>
+
+</body>
+</html>
