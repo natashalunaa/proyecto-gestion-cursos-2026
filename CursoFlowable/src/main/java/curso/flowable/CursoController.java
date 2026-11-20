@@ -1,192 +1,135 @@
-
 package curso.flowable;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import curso.flowable.dto.SolicitudCurso;
+import curso.flowable.repository.EmpresaRepository;
+import curso.flowable.service.CursoService;
+
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 public class CursoController {
 
-    private final JdbcTemplate jdbcTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final HttpClient cliente = HttpClient.newHttpClient();
+    private final EmpresaRepository empresaRepository;
+    private final CursoService cursoService;
 
-    @Value("${flowable.rest.url:http://localhost:8080/flowable-ui/process-api}")
-    private String flowableUrl;
+    public CursoController(EmpresaRepository empresaRepository,
+            CursoService cursoService) {
 
-    @Value("${FLOWABLE_USER:admin}")
-    private String flowableUser;
-
-    @Value("${FLOWABLE_PASSWORD}")
-    private String flowablePassword;
-
-    public CursoController(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        this.empresaRepository = empresaRepository;
+        this.cursoService = cursoService;
     }
 
+    // Comprobar que Spring Boot funciona
     @GetMapping("/api/cursos/saludo")
     public String saludo() {
         return "API de Gestion de Cursos funcionando correctamente";
     }
 
+    // Comprobar la conexion con PostgreSQL
+    @GetMapping("/api/cursos/probar-bdd")
+    public ResponseEntity<?> probarBaseDeDatos() {
+
+        try {
+            Integer cantidadEmpresas = empresaRepository.contarEmpresas();
+
+            return ResponseEntity.ok(
+                    "Conexion con PostgreSQL correcta. Empresas registradas: "
+                            + cantidadEmpresas);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("No se pudo consultar PostgreSQL. Revisar los logs del servidor.");
+        }
+    }
+
+    // Recibir una solicitud de capacitacion
     @PostMapping("/api/cursos/iniciar")
     public ResponseEntity<?> iniciarCurso(@RequestBody SolicitudCurso solicitud) {
 
-        if (solicitud.empresaId() == null
-                || solicitud.tematica() == null
-                || solicitud.tematica().isBlank()) {
+        // Comprobar si la solicitud incluye el CUIT
+        if (solicitud.getCuit() == null || solicitud.getCuit().isBlank()) {
             return ResponseEntity.badRequest()
-                    .body("Debe indicar empresaId y tematica.");
+                    .body("Debe indicar el CUIT de la empresa.");
         }
 
-        Integer cantidadEmpresas = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM empresas WHERE id = ?",
-                Integer.class,
-                solicitud.empresaId()
-        );
-
-        if (cantidadEmpresas == null || cantidadEmpresas == 0) {
+        // Comprobar que se haya indicado la temática
+        if (solicitud.tematica() == null || solicitud.tematica().isBlank()) {
             return ResponseEntity.badRequest()
-                    .body("La empresa indicada no existe.");
+                    .body("Debe indicar la tematica del curso.");
         }
 
-        String processInstanceId = null;
+        // Buscar la empresa utilizando su CUIT
+        Integer empresaId = cursoService.buscarEmpresaPorCuit(
+                solicitud.getCuit());
+
+        // Si la empresa no existe, registrarla automáticamente
+        if (empresaId == null) {
+
+            // Comprobar que estén los datos necesarios
+            if (solicitud.getEmpresa() == null || solicitud.getEmpresa().isBlank()
+                    || solicitud.getContacto() == null || solicitud.getContacto().isBlank()
+                    || solicitud.getEmail() == null || solicitud.getEmail().isBlank()) {
+
+                return ResponseEntity.badRequest()
+                        .body("Debe completar los datos de la empresa.");
+            }
+
+            // Registrar la nueva empresa en PostgreSQL
+            try {
+                empresaId = cursoService.registrarEmpresa(
+                        solicitud.getCuit(),
+                        solicitud.getEmpresa(),
+                        solicitud.getContacto(),
+                        solicitud.getEmail(),
+                        solicitud.getTelefono());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                return ResponseEntity.internalServerError()
+                        .body("No se pudo registrar la empresa.");
+            }
+        }
+
+        // Asignar el ID encontrado a la solicitud
+        solicitud.setEmpresaId(empresaId);
 
         try {
-            String autenticacion = Base64.getEncoder().encodeToString(
-                    (flowableUser + ":" + flowablePassword)
-                            .getBytes(StandardCharsets.UTF_8)
-            );
-
-            
-            Map<String, Object> datos = Map.of(
-                    "message", "Solicitud de curso"
-            );
-
-            String json = objectMapper.writeValueAsString(datos);
-
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(flowableUrl + "/runtime/process-instances"))
-                    .header("Authorization", "Basic " + autenticacion)
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
-                    .build();
-
-            HttpResponse<String> respuesta = cliente.send(
-                    request,
-                    HttpResponse.BodyHandlers.ofString()
-            );
-
-            if (respuesta.statusCode() < 200 || respuesta.statusCode() >= 300) {
-                return ResponseEntity.status(502)
-                        .body("Flowable no pudo iniciar el proceso: "
-                                + respuesta.body());
-            }
-
-            JsonNode resultado = objectMapper.readTree(respuesta.body());
-            processInstanceId = resultado.path("id").asText(null);
-
-            if (processInstanceId == null || processInstanceId.isBlank()) {
-                return ResponseEntity.status(502)
-                        .body("Flowable no devolvio el ID de la instancia.");
-            }
-
-            
-            jdbcTemplate.update(
-                    "INSERT INTO cursos "
-                    + "(empresa_id, process_instance_id, tematica, "
-                    + "descripcion, cantidad_participantes, "
-                    + "fechas_preferidas, estado) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, 'en_evaluacion')",
-                    solicitud.empresaId(),
-                    processInstanceId,
-                    solicitud.tematica(),
-                    solicitud.descripcion(),
-                    solicitud.cantidadParticipantes(),
-                    solicitud.fechasPreferidas()
-            );
-
+            // El Service inicia Flowable y guarda el curso
+            String processInstanceId = cursoService.registrarSolicitud(solicitud);
 
             return ResponseEntity.ok(Map.of(
                     "mensaje", "Solicitud de curso registrada correctamente",
-                    "processInstanceId", processInstanceId
-            ));
+                    "processInstanceId", processInstanceId));
 
         } catch (Exception e) {
-            // No se elimina automáticamente la instancia: si la inserción
-            // falló, hay que revisar su estado antes de reintentar.
+
+            // Mostrar el error completo en la terminal de Spring Boot
+            e.printStackTrace();
+
             return ResponseEntity.internalServerError()
-                    .body("Error al iniciar o registrar el curso: "
-                            + e.getMessage()
-                            + (processInstanceId == null
-                                ? ""
-                                : ". Instancia creada: " + processInstanceId));
+                    .body("Error al iniciar o registrar el curso. "
+                            + "Revisar los logs del servidor.");
         }
     }
 
-   public static class SolicitudCurso {
+    // Consultar los datos de un curso por su ID
+    @GetMapping("/api/cursos/{id}")
+    public ResponseEntity<?> obtenerCurso(@PathVariable("id") Integer id) {
 
-    private Integer empresaId;
-    private String tematica;
-    private String descripcion;
-    private Integer cantidadParticipantes;
-    private String fechasPreferidas;
+        Map<String, Object> curso = cursoService.buscarCursoPorId(id);
 
-    public Integer empresaId() {
-        return empresaId;
+        if (curso == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(curso);
     }
-
-    public String tematica() {
-        return tematica;
-    }
-
-    public String descripcion() {
-        return descripcion;
-    }
-
-    public Integer cantidadParticipantes() {
-        return cantidadParticipantes;
-    }
-
-    public String fechasPreferidas() {
-        return fechasPreferidas;
-    }
-
-    public void setEmpresaId(Integer empresaId) {
-        this.empresaId = empresaId;
-    }
-
-    public void setTematica(String tematica) {
-        this.tematica = tematica;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public void setCantidadParticipantes(Integer cantidadParticipantes) {
-        this.cantidadParticipantes = cantidadParticipantes;
-    }
-
-    public void setFechasPreferidas(String fechasPreferidas) {
-        this.fechasPreferidas = fechasPreferidas;
-    }
-}
 }

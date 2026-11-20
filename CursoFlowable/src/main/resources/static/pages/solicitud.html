@@ -1,11 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Solicitar capacitación</title>
 
@@ -36,8 +34,7 @@
                     Solicitar capacitación
                 </a>
 
-                <a href="/pages/login.html"
-                   class="boton-login">
+                <a href="/pages/login.html" class="boton-login">
                     Iniciar sesión
                 </a>
 
@@ -76,30 +73,28 @@
 
                     <div class="campo">
 
-                        <label for="empresa">
-                            Nombre de la empresa
-                        </label>
+                        <label for="cuit">CUIT de la empresa</label>
 
-                        <input
-                            type="text"
-                            id="empresa"
-                            name="empresa"
+                        <input type="text" id="cuit" name="cuit" placeholder="Ej: 30-12345678-9" maxlength="13"
+                            pattern="[0-9]{2}-[0-9]{8}-[0-9]" title="Ingresá el CUIT con el formato 30-12345678-9"
                             required>
+
+                    </div>
+
+                    <div class="campo">
+
+                        <label for="empresa">Nombre de la empresa</label>
+
+                        <input type="text" id="empresa" name="empresa" required>
 
                     </div>
 
 
                     <div class="campo">
 
-                        <label for="contacto">
-                            Persona de contacto
-                        </label>
+                        <label for="contacto"> Persona de contacto </label>
 
-                        <input
-                            type="text"
-                            id="contacto"
-                            name="contacto"
-                            required>
+                        <input type="text" id="contacto" name="contacto" required>
 
                     </div>
 
@@ -108,30 +103,18 @@
 
                         <div class="campo">
 
-                            <label for="email">
-                                Correo electrónico
-                            </label>
+                            <label for="email"> Correo electrónico </label>
 
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                required>
+                            <input type="email" id="email" name="email" required>
 
                         </div>
 
 
                         <div class="campo">
 
-                            <label for="telefono">
-                                Teléfono
-                            </label>
+                            <label for="telefono">Teléfono</label>
 
-                            <input
-                                type="tel"
-                                id="telefono"
-                                name="telefono"
-                                required>
+                            <input type="tel" id="telefono" name="telefono" required>
 
                         </div>
 
@@ -147,64 +130,37 @@
 
                     <div class="campo">
 
-                        <label for="tematica">
-                            Temática de la capacitación
-                        </label>
+                        <label for="tematica"> Temática de la capacitación</label>
 
-                        <input
-                            type="text"
-                            id="tematica"
-                            name="tematica"
-                            placeholder="Ej: Excel avanzado"
-                            required>
+                        <input type="text" id="tematica" name="tematica" placeholder="Ej: Excel avanzado" required>
 
                     </div>
 
 
                     <div class="campo">
 
-                        <label for="descripcion">
-                            Descripción de la capacitación
-                        </label>
+                        <label for="descripcion"> Descripción de la capacitación</label>
 
-                        <textarea
-                            id="descripcion"
-                            name="descripcion"
-                            rows="4"
-                            placeholder="Describí las necesidades de capacitación de tu empresa"
-                            required></textarea>
+                        <textarea id="descripcion" name="descripcion" rows="4"
+                            placeholder="Describí las necesidades de capacitación de tu empresa" required></textarea>
 
                     </div>
 
 
                     <div class="campo">
 
-                        <label for="participantes">
-                            Cantidad estimada de participantes
-                        </label>
+                        <label for="participantes">Cantidad estimada de participantes </label>
 
-                        <input
-                            type="number"
-                            id="participantes"
-                            name="participantes"
-                            min="1"
-                            step="1"
-                            required>
+                        <input type="number" id="participantes" name="participantes" min="1" step="1" required>
 
                     </div>
 
 
                     <div class="campo">
 
-                        <label for="fechas">
-                            Fechas preferidas
-                        </label>
+                        <label for="fechas">Fechas preferidas</label>
 
-                        <textarea
-                            id="fechas"
-                            name="fechas"
-                            rows="3"
-                            placeholder="Ej: Primera quincena de diciembre"
+                        <textarea id="fechas" name="fechas" rows="3" placeholder="Ej: Primera quincena de diciembre"
                             required></textarea>
 
                     </div>
@@ -215,9 +171,7 @@
                 <!-- BOTÓN -->
                 <div class="acciones-formulario">
 
-                    <button
-                        type="submit"
-                        class="boton-principal">
+                    <button type="submit" class="boton-principal">
                         Enviar solicitud
                     </button>
 
@@ -235,26 +189,69 @@
         <p>Institución de Capacitación - 2026</p>
     </footer>
 
+    <!-- CONEXIÓN DEL FORMULARIO CON SPRING BOOT: Envía los datos de la solicitud al backend mediante fetch().
+     Spring Boot registra la empresa, inicia el proceso en Flowable y guarda la solicitud del curso en PostgreSQL. -->
+    
+        <script>
+            const formulario = document.getElementById("formularioSolicitud");
 
-    <!-- VALIDACIÓN TEMPORAL -->
-    <script>
+            formulario.addEventListener("submit", async function (event) {
 
-        const formulario = document.getElementById(
-            "formularioSolicitud"
-        );
+                // Evitar que la página se recargue
+                event.preventDefault();
 
-        formulario.addEventListener("submit", function(event) {
+            // Obtener los datos del formulario
+            const solicitud = {
+                cuit: document.getElementById("cuit").value.trim(),
+            empresa: document.getElementById("empresa").value.trim(),
+            contacto: document.getElementById("contacto").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            telefono: document.getElementById("telefono").value.trim(),
+            tematica: document.getElementById("tematica").value.trim(),
+            descripcion: document.getElementById("descripcion").value.trim(),
+            cantidadParticipantes: Number(
+            document.getElementById("participantes").value
+            ),
+            fechasPreferidas: document.getElementById("fechas").value.trim()
+            };
 
-            event.preventDefault();
+            try {
+                // Enviar la solicitud a Spring Boot
+                const respuesta = await fetch("/api/cursos/iniciar", {
+                method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+                    },
+            body: JSON.stringify(solicitud)
+                });
+
+            if (!respuesta.ok) {
+                    const mensajeError = await respuesta.text();
+            throw new Error(mensajeError);
+                }
+
+            const resultado = await respuesta.json();
 
             alert(
-                "Los datos del formulario son válidos. " +
-                "Todavía no se enviaron al servidor."
+            "¡Solicitud enviada correctamente!\n" +
+            "Número de instancia: " + resultado.processInstanceId
             );
 
-        });
+            // Limpiar el formulario después de enviarlo
+            formulario.reset();
 
+            } catch (error) {
+                console.error("Error al enviar la solicitud:", error);
+
+            alert(
+            "No se pudo enviar la solicitud.\n" +
+            error.message
+            );
+            }
+        });
     </script>
 
+
 </body>
+
 </html>
