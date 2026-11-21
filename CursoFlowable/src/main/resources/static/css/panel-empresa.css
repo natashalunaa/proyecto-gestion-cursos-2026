@@ -1,0 +1,127 @@
+/* PANEL DE EMPRESA */
+
+.panel-empresa {
+    min-height: calc(100vh - 170px);
+    padding-top: 50px;
+    padding-bottom: 70px;
+}
+
+/* BIENVENIDA */
+
+.bienvenida {
+    margin-bottom: 40px;
+}
+
+.bienvenida h1 {
+    color: #21295C;
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.bienvenida p {
+    color: #64748B;
+    font-size: 17px;
+}
+
+/* SECCIÓN DE CURSOS */
+
+.seccion-cursos {
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(33, 41, 92, 0.08);
+}
+
+.seccion-cursos h2 {
+    color: #21295C;
+    margin-top: 0;
+    margin-bottom: 25px;
+}
+
+/* TABLA */
+
+.tabla-contenedor {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    text-align: left;
+    padding: 16px;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+th {
+    background-color: #F1F5F9;
+    color: #334155;
+    font-weight: bold;
+}
+
+/* ESTADOS */
+
+.estado {
+    display: inline-block;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.preparacion {
+    background-color: #DBEAFE;
+    color: #1D4ED8;
+}
+
+.negociacion {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.finalizado {
+    background-color: #DCFCE7;
+    color: #166534;
+}
+
+/* BOTONES */
+
+.boton-detalle {
+    background-color: #1C7293;
+    color: white;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.boton-detalle:hover {
+    background-color: #065A82;
+}
+
+/* AVISO */
+
+.aviso-demo {
+    color: #64748B;
+    font-size: 13px;
+    margin-top: 20px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 600px) {
+    .seccion-cursos {
+        padding: 18px;
+    }
+
+    .bienvenida h1 {
+        font-size: 26px;
+    }
+}

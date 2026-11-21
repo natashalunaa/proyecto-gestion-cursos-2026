@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel administrativo - Institución de Capacitación</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+    <link rel="stylesheet" href="../css/panel-administrativo.css">
+</head>
+
+<body>
+    <div class="panel-layout">
+        <aside class="menu-lateral">
+            <a href="/index.html" class="marca-panel">
+                <span>🎓</span>
+                <span>Institución de Capacitación</span>
+            </a>
+
+            <div class="usuario-panel">
+                <p class="usuario-rol">Personal administrativo</p>
+                <p class="usuario-nombre">Administrador</p>
+            </div>
+
+            <nav class="navegacion-lateral">
+                <a href="#tareas" class="opcion-menu activa">Mis tareas</a>
+            </nav>
+
+            <a href="/index.html" class="cerrar-sesion">Volver al inicio</a>
+        </aside>
+
+        <main class="contenido-panel">
+            <header class="cabecera-panel">
+                <div>
+                    <h1>Panel administrativo</h1>
+                    <p>Consulta y gestión de tareas del proceso de capacitación.</p>
+                </div>
+                <span class="etiqueta-usuario">Administración</span>
+            </header>
+
+            <section class="seccion-panel" id="tareas">
+                <div class="encabezado-seccion">
+                    <h2>Mis tareas</h2>
+                    <p>Tareas asignadas y disponibles para reclamar.</p>
+                </div>
+
+                <div class="tabla-contenedor">
+                    <table class="tabla-tareas">
+                        <thead>
+                            <tr>
+                                <th>Tarea</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="lista-tareas">
+                            <tr>
+                                <td colspan="3">Cargando tareas...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        async function cargarTareas() {
+            const tabla = document.getElementById("lista-tareas");
+
+            try {
+                const respuesta = await fetch("/api/tareas/mis-tareas", { credentials: "same-origin" });
+
+                if (respuesta.status === 401) {
+                    window.location.href = "/pages/login.html";
+                    return;
+                }
+                if (!respuesta.ok) {
+                    throw new Error("No se pudieron obtener las tareas");
+                }
+
+                const resultado = await respuesta.json();
+                document.querySelector(".usuario-nombre").textContent = resultado.usuario;
+                const tareas = resultado.data || [];
+                console.log("Tareas recibidas de Flowable:", tareas);
+
+                tabla.innerHTML = "";
+
+                if (tareas.length === 0) {
+                    const fila = document.createElement("tr");
+                    const celda = document.createElement("td");
+
+                    celda.colSpan = 3;
+                    celda.textContent = "No hay tareas pendientes.";
+
+                    fila.appendChild(celda);
+                    tabla.appendChild(fila);
+                    return;
+                }
+
+                tareas.forEach(tarea => {
+                    const fila = document.createElement("tr");
+
+                    const nombre = document.createElement("td");
+                    nombre.textContent = tarea.name || "Sin nombre";
+                    nombre.classList.add("nombre-tarea");
+
+                    const estado = document.createElement("td");
+
+                    const etiqueta = document.createElement("span");
+                    etiqueta.classList.add("estado-tarea");
+
+                    if (tarea.assignee === resultado.usuario) {
+                        etiqueta.textContent = "Asignada";
+                        etiqueta.classList.add("asignada");
+                    } else {
+                        etiqueta.textContent = "Disponible";
+                        etiqueta.classList.add("disponible");
+                    }
+
+                    estado.appendChild(etiqueta);
+
+                    const acciones = document.createElement("td");
+
+                    const boton = document.createElement("button");
+                    boton.type = "button";
+                    boton.textContent = "Ver tarea";
+
+                    boton.classList.add("boton-tarea");
+                    boton.addEventListener("click", async () => {
+                        try {
+                            const processInstanceId = tarea.processInstanceId;
+
+                            const respuesta = await fetch(
+                                `/api/cursos/instancia/${encodeURIComponent(processInstanceId)}`
+                            );
+
+                            if (!respuesta.ok) {
+                                throw new Error("No se pudo obtener el curso");
+                            }
+
+                            const curso = await respuesta.json();
+
+                            console.log("Curso asociado a la tarea:", curso);
+
+                            alert(
+                                "Tarea: " + tarea.name +
+                                "\nCurso: " + curso.tematica +
+                                "\nParticipantes: " + curso.cantidad_participantes +
+                                "\nEstado: " + curso.estado
+                            );
+
+                        } catch (error) {
+                            console.error("Error al obtener el curso:", error);
+                            alert("No se pudieron cargar los datos del curso.");
+                        }
+                    });
+
+                    acciones.appendChild(boton);
+
+                    fila.appendChild(nombre);
+                    fila.appendChild(estado);
+                    fila.appendChild(acciones);
+
+                    tabla.appendChild(fila);
+                });
+
+            } catch (error) {
+                console.error("Error al cargar tareas:", error);
+
+                tabla.innerHTML = "";
+
+                const fila = document.createElement("tr");
+                const celda = document.createElement("td");
+
+                celda.colSpan = 3;
+                celda.textContent = "Error al cargar las tareas de Flowable.";
+
+                fila.appendChild(celda);
+                tabla.appendChild(fila);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", cargarTareas);
+    </script>
+</body>
+
+</html>

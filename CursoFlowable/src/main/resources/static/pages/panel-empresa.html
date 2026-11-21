@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mis cursos - Institución de Capacitación</title>
+
+    <link rel="stylesheet" href="/css/estilos.css">
+    <link rel="stylesheet" href="/css/panel-empresa.css">
+</head>
+
+<body>
+
+    <header class="encabezado">
+        <div class="contenedor navegacion">
+
+            <a href="/index.html" class="marca">
+                <span class="logo">🎓</span>
+                <span>Institución de Capacitación</span>
+            </a>
+
+            <nav class="menu">
+                <a href="/pages/panel-empresa.html">
+                    Mis cursos
+                </a>
+
+                <a href="/index.html" class="boton-login">
+                    Volver al inicio
+                </a>
+            </nav>
+
+        </div>
+    </header>
+
+    <main class="contenedor panel-empresa">
+
+        <section class="bienvenida">
+            <h1>Panel de empresa</h1>
+
+            <p>
+                Consultá tus capacitaciones y el estado
+                de cada solicitud.
+            </p>
+        </section>
+
+        <section class="seccion-cursos">
+
+            <h2>Mis cursos</h2>
+
+            <div class="tabla-contenedor">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Curso</th>
+                            <th>Participantes</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <!-- CURSO 1 -->
+                        <tr>
+                            <td>Introducción a Excel</td>
+                            <td>15</td>
+
+                            <td>
+                                <span class="estado preparacion">
+                                    En preparación
+                                </span>
+                            </td>
+
+                            <td>
+                                <a href="/pages/detalle-curso.html?id=1"
+                                   class="boton-detalle">
+                                    Ver detalles
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!-- CURSO 2 -->
+                        <tr>
+                            <td>Seguridad e higiene</td>
+                            <td>20</td>
+
+                            <td>
+                                <span class="estado negociacion">
+                                    En negociación
+                                </span>
+                            </td>
+
+                            <td>
+                                <a href="/pages/detalle-curso.html?id=2"
+                                   class="boton-detalle">
+                                    Ver detalles
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!-- CURSO 3 -->
+                        <tr>
+                            <td>Atención al cliente</td>
+                            <td>10</td>
+
+                            <td>
+                                <span class="estado finalizado">
+                                    Finalizado
+                                </span>
+                            </td>
+
+                            <td>
+                                <a href="/pages/detalle-curso.html?id=3"
+                                   class="boton-detalle">
+                                    Ver detalles
+                                </a>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+
+            </div>
+
+            <p class="aviso-demo">
+                Los cursos mostrados son datos de ejemplo.
+            </p>
+
+        </section>
+
+    </main>
+
+    <footer>
+        <p>Institución de Capacitación - 2026</p>
+    </footer>
+
+</body>
+
+</html>

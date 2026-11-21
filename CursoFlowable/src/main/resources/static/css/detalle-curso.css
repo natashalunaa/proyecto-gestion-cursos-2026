@@ -1,0 +1,270 @@
+/* ===================================
+   CONTENEDOR PRINCIPAL
+=================================== */
+
+.detalle-curso {
+    padding-top: 45px;
+    padding-bottom: 70px;
+    min-height: calc(100vh - 170px);
+}
+
+
+/* ===================================
+   ENLACE PARA VOLVER
+=================================== */
+
+.enlace-volver {
+    display: inline-block;
+    margin-bottom: 25px;
+    color: #1C7293;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.enlace-volver:hover {
+    text-decoration: underline;
+}
+
+
+/* ===================================
+   INFORMACIÓN DEL CURSO
+=================================== */
+
+.informacion-curso {
+    background-color: white;
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(33, 41, 92, 0.08);
+    margin-bottom: 30px;
+}
+
+.informacion-curso h1 {
+    color: #21295C;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.estado-curso {
+    display: inline-block;
+    background-color: #DBEAFE;
+    color: #1D4ED8;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+
+/* ===================================
+   DATOS DEL CURSO
+=================================== */
+
+.datos-curso {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.datos-curso strong {
+    color: #334155;
+}
+
+.datos-curso p {
+    margin-bottom: 0;
+    color: #64748B;
+}
+
+
+/* ===================================
+   PREPARACIÓN DEL CURSO
+=================================== */
+
+.preparacion {
+    background-color: white;
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(33, 41, 92, 0.08);
+}
+
+.preparacion h2 {
+    color: #21295C;
+    margin-top: 0;
+}
+
+.descripcion {
+    color: #64748B;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+
+/* ===================================
+   ACTIVIDADES DE PREPARACIÓN
+=================================== */
+
+.actividades {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.actividad {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 22px;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+}
+
+.actividad-icono {
+    width: 45px;
+    height: 45px;
+    min-width: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.actividad-contenido h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #21295C;
+}
+
+.actividad-contenido p {
+    color: #64748B;
+    line-height: 1.6;
+}
+
+
+/* ===================================
+   ESTADOS DE LAS ACTIVIDADES
+=================================== */
+
+.etiqueta {
+    display: inline-block;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* Actividad completada */
+
+.completada {
+    background-color: #DCFCE7;
+    color: #166534;
+}
+
+/* Actividad en proceso */
+
+.en-proceso {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+/* Actividad pendiente */
+
+.pendiente {
+    background-color: #F1F5F9;
+    color: #64748B;
+}
+
+
+/* ===================================
+   MENSAJE SEGÚN ESTADO DEL CURSO
+=================================== */
+
+.mensaje-estado {
+    background-color: white;
+    padding: 32px;
+
+    border: 1px solid #9EB3C2;
+    border-left: 5px solid #1C7293;
+
+    border-radius: 12px;
+
+    box-shadow: 0 4px 16px rgba(33, 41, 92, 0.08);
+}
+
+.mensaje-estado h2 {
+    color: #21295C;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.mensaje-estado p {
+    color: #64748B;
+    line-height: 1.7;
+    margin-bottom: 0;
+}
+
+
+/* ===================================
+   AVISO DE DATOS DE EJEMPLO
+=================================== */
+
+.aviso-ejemplo {
+    color: #64748B;
+    font-size: 13px;
+    margin-top: 25px;
+}
+
+
+/* ===================================
+   DISEÑO RESPONSIVE
+   PANTALLAS PEQUEÑAS
+=================================== */
+
+@media (max-width: 600px) {
+
+    .detalle-curso {
+        padding-top: 25px;
+        padding-bottom: 40px;
+    }
+
+    .informacion-curso,
+    .preparacion,
+    .mensaje-estado {
+        padding: 22px;
+    }
+
+    .informacion-curso h1 {
+        font-size: 26px;
+    }
+
+    .datos-curso {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .actividad {
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .actividad-icono {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        font-size: 20px;
+    }
+
+
+}
+
+
+/* MENSAJE PARA CURSOS FINALIZADOS */
+
+.mensaje-finalizado {
+    border-left: 5px solid #166534;
+}
+
+.mensaje-finalizado h2 {
+    color: #166534;
+}

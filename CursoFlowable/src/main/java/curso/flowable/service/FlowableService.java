@@ -90,4 +90,56 @@ public class FlowableService {
 
                 return processInstanceId;
         }
+
+        // Consultar las tareas asignadas a un usuario en Flowable
+        public JsonNode obtenerTareasUsuario(String usuario) throws Exception {
+
+                String autenticacion = Base64.getEncoder().encodeToString(
+                                (flowableUser + ":" + flowablePassword)
+                                                .getBytes(StandardCharsets.UTF_8));
+
+                String url = flowableUrl + "/runtime/tasks?assignee="
+                                + java.net.URLEncoder.encode(
+                                                usuario, StandardCharsets.UTF_8) + "&size=100";
+
+                HttpRequest request = HttpRequest.newBuilder()
+                                .uri(URI.create(url))
+                                .header("Authorization", "Basic " + autenticacion)
+                                .GET()
+                                .build();
+
+                HttpResponse<String> respuesta = cliente.send(
+                                request,
+                                HttpResponse.BodyHandlers.ofString());
+
+                if (respuesta.statusCode() < 200 || respuesta.statusCode() >= 300) {
+                        throw new IllegalStateException(
+                                        "Error al consultar tareas de Flowable. HTTP "
+                                                        + respuesta.statusCode());
+                }
+
+                return objectMapper.readTree(respuesta.body());
+        }
+
+        // Tareas sin asignar que el usuario puede reclamar por ser candidato
+        // directamente o por pertenecer a un grupo candidato.
+        public JsonNode obtenerTareasCandidatas(String usuario) throws Exception {
+                String autenticacion = Base64.getEncoder().encodeToString(
+                                (flowableUser + ":" + flowablePassword)
+                                                .getBytes(StandardCharsets.UTF_8));
+                String url = flowableUrl + "/runtime/tasks?candidateUser="
+                                + java.net.URLEncoder.encode(usuario, StandardCharsets.UTF_8)
+                                + "&size=100";
+                HttpRequest request = HttpRequest.newBuilder()
+                                .uri(URI.create(url))
+                                .header("Authorization", "Basic " + autenticacion)
+                                .GET().build();
+                HttpResponse<String> respuesta = cliente.send(
+                                request, HttpResponse.BodyHandlers.ofString());
+                if (respuesta.statusCode() < 200 || respuesta.statusCode() >= 300) {
+                        throw new IllegalStateException("Error al consultar tareas candidatas. HTTP "
+                                        + respuesta.statusCode());
+                }
+                return objectMapper.readTree(respuesta.body());
+        }
 }

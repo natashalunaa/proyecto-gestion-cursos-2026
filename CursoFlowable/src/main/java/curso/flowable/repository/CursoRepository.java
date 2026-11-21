@@ -53,4 +53,19 @@ public class CursoRepository {
         return resultados.get(0);
     }
 
+    // Buscar un curso por la instancia del proceso en Flowable
+    public Map<String, Object> buscarCursoPorProcessInstanceId(
+            String processInstanceId) {
+
+        String sql = "SELECT * FROM cursos WHERE process_instance_id = ?";
+
+        List<Map<String, Object>> resultados = jdbcTemplate.queryForList(sql, processInstanceId);
+
+        if (resultados.isEmpty()) {
+            return null;
+        }
+
+        return resultados.get(0);
+    }
+
 }
