@@ -100,7 +100,8 @@ public class FlowableService {
 
                 String url = flowableUrl + "/runtime/tasks?assignee="
                                 + java.net.URLEncoder.encode(
-                                                usuario, StandardCharsets.UTF_8) + "&size=100";
+                                                usuario, StandardCharsets.UTF_8)
+                                + "&size=100";
 
                 HttpRequest request = HttpRequest.newBuilder()
                                 .uri(URI.create(url))
@@ -142,4 +143,71 @@ public class FlowableService {
                 }
                 return objectMapper.readTree(respuesta.body());
         }
+
+        // Consultar una tarea específica por su ID.
+        public JsonNode obtenerTareaPorId(String tareaId) throws Exception {
+
+                String autenticacion = Base64.getEncoder().encodeToString(
+                                (flowableUser + ":" + flowablePassword)
+                                                .getBytes(StandardCharsets.UTF_8));
+
+                String url = flowableUrl + "/runtime/tasks/"
+                                + java.net.URLEncoder.encode(tareaId, StandardCharsets.UTF_8);
+
+                HttpRequest request = HttpRequest.newBuilder()
+                                .uri(URI.create(url))
+                                .header("Authorization", "Basic " + autenticacion)
+                                .GET()
+                                .build();
+
+                HttpResponse<String> respuesta = cliente.send(
+                                request,
+                                HttpResponse.BodyHandlers.ofString());
+
+                if (respuesta.statusCode() == 404) {
+                        return null;
+                }
+
+                if (respuesta.statusCode() < 200 || respuesta.statusCode() >= 300) {
+                        throw new IllegalStateException(
+                                        "Error al consultar la tarea. HTTP "
+                                                        + respuesta.statusCode());
+                }
+
+                return objectMapper.readTree(respuesta.body());
+        }
+
+        public void completarTarea(String tareaId) throws Exception {
+
+                String autenticacion = Base64.getEncoder().encodeToString(
+                                (flowableUser + ":" + flowablePassword)
+                                                .getBytes(StandardCharsets.UTF_8));
+
+                String url = flowableUrl + "/runtime/tasks/"
+                                + java.net.URLEncoder.encode(tareaId, StandardCharsets.UTF_8);
+
+                Map<String, Object> datos = Map.of(
+                                "action", "complete");
+
+                String json = objectMapper.writeValueAsString(datos);
+
+                HttpRequest request = HttpRequest.newBuilder()
+                                .uri(URI.create(url))
+                                .header("Authorization", "Basic " + autenticacion)
+                                .header("Content-Type", "application/json")
+                                .POST(HttpRequest.BodyPublishers.ofString(json))
+                                .build();
+
+                HttpResponse<String> respuesta = cliente.send(
+                                request,
+                                HttpResponse.BodyHandlers.ofString());
+
+                if (respuesta.statusCode() < 200 || respuesta.statusCode() >= 300) {
+                        throw new IllegalStateException(
+                                        "No se pudo completar la tarea. HTTP "
+                                                        + respuesta.statusCode()
+                                                        + ": " + respuesta.body());
+                }
+        }
+
 }

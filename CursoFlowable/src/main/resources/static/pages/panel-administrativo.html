@@ -159,6 +159,62 @@
 
                     acciones.appendChild(boton);
 
+
+                    if (tarea.assignee === resultado.usuario) {
+
+                        const botonCompletar = document.createElement("button");
+                        botonCompletar.type = "button";
+                        botonCompletar.textContent = "Completar tarea";
+                        botonCompletar.classList.add("boton-tarea");
+
+                        botonCompletar.addEventListener("click", async () => {
+
+                            const confirmar = confirm(
+                                "¿Seguro que querés completar la tarea: " + tarea.name + "?"
+                            );
+
+                            if (!confirmar) return;
+
+                            botonCompletar.disabled = true;
+
+                            try {
+                                const respuesta = await fetch(
+                                    `/api/tareas/${encodeURIComponent(tarea.id)}/completar`,
+                                    {
+                                        method: "POST",
+                                        credentials: "same-origin"
+                                    }
+                                );
+
+                                if (respuesta.status === 401) {
+                                    window.location.href = "/pages/login.html";
+                                    return;
+                                }
+
+                                const resultadoOperacion = await respuesta.json();
+
+                                if (!respuesta.ok) {
+                                    throw new Error(
+                                        resultadoOperacion.error || "No se pudo completar la tarea"
+                                    );
+                                }
+
+                                alert("¡Tarea completada correctamente!");
+
+                                await cargarTareas();
+
+                            } catch (error) {
+                                console.error("Error al completar tarea:", error);
+                                alert(error.message);
+                            } finally {
+                                botonCompletar.disabled = false;
+                            }
+                        });
+
+                        acciones.appendChild(botonCompletar);
+                    }
+
+
                     fila.appendChild(nombre);
                     fila.appendChild(estado);
                     fila.appendChild(acciones);

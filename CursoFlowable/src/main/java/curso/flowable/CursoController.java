@@ -155,7 +155,8 @@ public class CursoController {
             JsonNode candidatas = flowableService.obtenerTareasCandidatas(usuario);
             Map<String, JsonNode> tareasUnicas = new LinkedHashMap<>();
             for (JsonNode tarea : asignadas.path("data")) {
-                if (tarea.hasNonNull("id")) tareasUnicas.put(tarea.get("id").asText(), tarea);
+                if (tarea.hasNonNull("id"))
+                    tareasUnicas.put(tarea.get("id").asText(), tarea);
             }
             for (JsonNode tarea : candidatas.path("data")) {
                 if (tarea.hasNonNull("id") && tarea.path("assignee").isNull()) {
@@ -185,6 +186,48 @@ public class CursoController {
         }
 
         return ResponseEntity.ok(curso);
+    }
+
+    @PostMapping("/api/tareas/{tareaId}/completar")
+    public ResponseEntity<?> completarTarea(
+            @PathVariable String tareaId,
+            HttpSession sesion) {
+
+        String usuario = (String) sesion.getAttribute("usuarioFlowable");
+
+        if (usuario == null || usuario.isBlank()) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("error", "Debes iniciar sesion."));
+        }
+
+        try {
+            JsonNode tarea = flowableService.obtenerTareaPorId(tareaId);
+
+            if (tarea == null) {
+                return ResponseEntity.status(404)
+                        .body(Map.of("error", "La tarea no existe."));
+            }
+
+            String responsable = tarea.path("assignee").asText("");
+
+            if (!usuario.equals(responsable)) {
+                return ResponseEntity.status(403)
+                        .body(Map.of("error",
+                                "No tienes permiso para completar esta tarea."));
+            }
+
+            flowableService.completarTarea(tareaId);
+
+            return ResponseEntity.ok(
+                    Map.of("mensaje", "Tarea completada correctamente."));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error",
+                            "No se pudo completar la tarea."));
+        }
     }
 
 }
