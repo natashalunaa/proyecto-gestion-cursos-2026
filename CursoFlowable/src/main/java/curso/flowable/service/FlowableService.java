@@ -27,7 +27,7 @@ public class FlowableService {
         @Value("${FLOWABLE_USER:admin}")
         private String flowableUser;
 
-        @Value("${FLOWABLE_PASSWORD}")
+       @Value("${FLOWABLE_PASSWORD:admin}")
         private String flowablePassword;
 
         public String iniciarProceso(SolicitudCurso solicitud) throws Exception {
@@ -37,7 +37,7 @@ public class FlowableService {
                                                 .getBytes(StandardCharsets.UTF_8));
 
                 Map<String, Object> datos = Map.of(
-                                "processDefinitionKey", "Process_Curso",
+                                "processDefinitionKey", "process-proyecto-curso",
                                 "variables", java.util.List.of(
                                                 Map.of(
                                                                 "name", "tematica",

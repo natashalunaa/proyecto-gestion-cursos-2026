@@ -1,0 +1,30 @@
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" id="definition_eb27a2fb-e525-11f1-9bf6-665a73a1975a" name="Evaluar viabilidad" namespace="http://www.flowable.org/dmn" exporter="Flowable Open Source Modeler" exporterVersion="6.8.0">
+  <decision id="evaluarViabilidad" name="Evaluar viabilidad">
+    <description>Determina si la institución puede aceptar una nueva solicitud según la cantidad de cursos activos.</description>
+    <decisionTable id="decisionTable_4c5e6bdf-f905-4f9f-beda-fe167add2dbe" hitPolicy="FIRST">
+      <input label="Cantidad de cursos activos">
+        <inputExpression id="inputExpression_c2485f84-2a5b-487f-8cc6-e92d2a6e6ad0" typeRef="number">
+          <text>cantidadCursosActivos</text>
+        </inputExpression>
+      </input>
+      <output id="outputExpression_06a9ecb9-34cc-4aa2-b438-6e288c361e69" label="Resultado de viabilidad" name="viabilidad" typeRef="string"></output>
+      <rule>
+        <inputEntry id="inputEntry_c2485f84-2a5b-487f-8cc6-e92d2a6e6ad0_1">
+          <text><![CDATA[< 5]]></text>
+        </inputEntry>
+        <outputEntry id="outputEntry_06a9ecb9-34cc-4aa2-b438-6e288c361e69_1">
+          <text><![CDATA["VIABLE"]]></text>
+        </outputEntry>
+      </rule>
+      <rule>
+        <inputEntry id="inputEntry_c2485f84-2a5b-487f-8cc6-e92d2a6e6ad0_2">
+          <text><![CDATA[>= 5]]></text>
+        </inputEntry>
+        <outputEntry id="outputEntry_06a9ecb9-34cc-4aa2-b438-6e288c361e69_2">
+          <text><![CDATA["NO_VIABLE"]]></text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI></dmndi:DMNDI>
+</definitions>

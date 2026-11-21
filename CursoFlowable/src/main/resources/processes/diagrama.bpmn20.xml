@@ -252,11 +252,21 @@ execution.setVariable("recordatorios", cantidad + 1)</script>
         </scriptTask>
         <endEvent id="sid-267063FE-9B88-45DC-BF6A-CF0C1F31F41F"/>
         <sequenceFlow id="Flow_099pqle" sourceRef="id_recibir_cancelacion" targetRef="Event_1rvo4k6"/>
+        <userTask id="id_verificar_compensacion" name="Verificar compensaciones" flowable:assignee="jefe_admin" flowable:formFieldValidation="true">
+          <extensionElements>
+            <modeler:activiti-idm-assignee xmlns:modeler="http://flowable.org/modeler">true</modeler:activiti-idm-assignee>
+            <modeler:assignee-info-email xmlns:modeler="http://flowable.org/modeler">jefe_admin@example.com</modeler:assignee-info-email>
+            <modeler:assignee-info-firstname xmlns:modeler="http://flowable.org/modeler">Jefe</modeler:assignee-info-firstname>
+            <modeler:assignee-info-lastname xmlns:modeler="http://flowable.org/modeler">Administrativo</modeler:assignee-info-lastname>
+            <modeler:initiator-can-complete xmlns:modeler="http://flowable.org/modeler">false</modeler:initiator-can-complete>
+          </extensionElements>
+        </userTask>
         <sequenceFlow id="sid-57287E18-407C-4F70-B842-BAC1D595A67E" sourceRef="Event_1rvo4k6" targetRef="sid-4C09764E-397B-463B-BF4F-649BACA08629"/>
         <sequenceFlow id="sid-0122747A-6C95-49E2-8425-ED24C901D4F6" sourceRef="sid-4C09764E-397B-463B-BF4F-649BACA08629" targetRef="sid-EA6586B6-B7A9-4238-B924-69A58239B205"/>
-        <sequenceFlow id="sid-D45F97F7-9F38-4E35-A7D4-A99A8E537850" sourceRef="sid-EA6586B6-B7A9-4238-B924-69A58239B205" targetRef="sid-1AF7A6D4-3C33-48F5-9216-DFE7AF706E5B"/>
+        <sequenceFlow id="sid-D45F97F7-9F38-4E35-A7D4-A99A8E537850" sourceRef="id_verificar_compensacion" targetRef="sid-1AF7A6D4-3C33-48F5-9216-DFE7AF706E5B"/>
         <sequenceFlow id="sid-47B5B527-1B86-47AA-B17E-EF612432E98E" sourceRef="sid-1AF7A6D4-3C33-48F5-9216-DFE7AF706E5B" targetRef="sid-267063FE-9B88-45DC-BF6A-CF0C1F31F41F"/>
-      </subProcess>
+      <sequenceFlow id="sid-DA6FEEA0-2091-4594-92ED-3566B2F84FD6" sourceRef="sid-EA6586B6-B7A9-4238-B924-69A58239B205" targetRef="id_verificar_compensacion"/>
+        </subProcess>
       <boundaryEvent id="Event_1ypcc1j" attachedToRef="id_contratar_equipamiento" cancelActivity="false">
         <compensateEventDefinition/>
       </boundaryEvent>
@@ -634,10 +644,7 @@ execution.setVariable("recordatorios", cantidad + 1)</script>
         <omgdc:Bounds height="80.00000000000001" width="100.0" x="215.27063057859272" y="315.0"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="sid-D45F97F7-9F38-4E35-A7D4-A99A8E537850" id="BPMNEdge_sid-D45F97F7-9F38-4E35-A7D4-A99A8E537850" flowable:sourceDockerX="15.0" flowable:sourceDockerY="15.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
-        <omgdi:waypoint x="1472.0248179073828" y="1400.0798542465088"/>
-        <omgdi:waypoint x="1489.0" y="1400.0"/>
-        <omgdi:waypoint x="1489.4881598534282" y="1438.150998704431"/>
-      </bpmndi:BPMNEdge>
+        <omgdi:waypoint x="1540" y="1437"/><omgdi:waypoint x="1490" y="1438.15"/></bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="Rechazado" id="BPMNEdge_Rechazado" flowable:sourceDockerX="14.999999999999943" flowable:sourceDockerY="15.000000000000007" flowable:targetDockerX="69.99999999999994" flowable:targetDockerY="40.00000000000001">
         <omgdi:waypoint x="1232.2190634510105" y="487.2156019663312"/>
         <omgdi:waypoint x="1355.270636915615" y="488.9903834232917"/>
@@ -902,6 +909,9 @@ execution.setVariable("recordatorios", cantidad + 1)</script>
         <omgdi:waypoint x="1325.1452513499578" y="1400.150938567669"/>
         <omgdi:waypoint x="1367.3456031079904" y="1400.1507623240454"/>
       </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="BPMNEdge_Association_Comp_AulaVirtual" bpmnElement="Association_Comp_AulaVirtual"><omgdi:waypoint x="916.3" y="1295.3"/><omgdi:waypoint x="916.3" y="1345.0"/><omgdi:waypoint x="1020.0" y="1345.0"/></bpmndi:BPMNEdge></bpmndi:BPMNPlane>
+    <bpmndi:BPMNEdge id="BPMNEdge_Association_Comp_AulaVirtual" bpmnElement="Association_Comp_AulaVirtual"><omgdi:waypoint x="916.3" y="1295.3"/><omgdi:waypoint x="916.3" y="1345.0"/><omgdi:waypoint x="1020.0" y="1345.0"/></bpmndi:BPMNEdge><bpmndi:BPMNShape bpmnElement="id_verificar_compensacion" id="BPMNShape_id_verificar_compensacion">
+        <omgdc:Bounds height="80.0" width="100.0" x="1490.0" y="1357.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_sid-DA6FEEA0-2091-4594-92ED-3566B2F84FD6" bpmnElement="sid-DA6FEEA0-2091-4594-92ED-3566B2F84FD6"><omgdi:waypoint x="1472.07" y="1400.15"/><omgdi:waypoint x="1490" y="1400.15"/></bpmndi:BPMNEdge></bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </definitions>
