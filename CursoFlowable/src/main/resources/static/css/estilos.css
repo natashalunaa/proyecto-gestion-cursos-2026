@@ -10,13 +10,14 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: #f5f7fa;
-    color: #263648;
+    font-size: 15px;
+    background-color: #F7F9FC;
+    color: #334155;
 }
 
 .contenedor {
     width: 90%;
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 0 auto;
 }
 
@@ -26,8 +27,8 @@ body {
 =================================== */
 
 .encabezado {
-    background-color: #173b60;
-    padding: 20px 0;
+    background-color: #1B3B6F;
+    padding: 14px 0;
 }
 
 .navegacion {
@@ -40,26 +41,27 @@ body {
 .marca {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     color: white;
-    font-size: 21px;
+    font-size: 18px;
     font-weight: bold;
     text-decoration: none;
 }
 
 .logo {
-    font-size: 30px;
+    font-size: 25px;
 }
 
 .menu {
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 22px;
 }
 
 .menu a {
     color: white;
     text-decoration: none;
+    font-size: 14px;
     font-weight: 500;
 }
 
@@ -68,9 +70,9 @@ body {
 }
 
 .boton-login {
-    border: 1px solid white;
-    border-radius: 7px;
-    padding: 11px 18px;
+    border: 1px solid #9EB3C2;
+    border-radius: 6px;
+    padding: 9px 15px;
 }
 
 
@@ -80,59 +82,59 @@ body {
 
 .banner {
     width: 100%;
-    min-height: 480px;
+    min-height: 370px;
 
     background-color: #eaf4ff;
     background-image: url("/img/capacitacion.png");
-    background-size: 100% auto;
+    background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
 }
 
-
 .banner-contenido {
     display: flex;
     align-items: center;
-    min-height: 480px;
+    min-height: 370px;
 }
 
 .banner-texto {
     width: 48%;
-    padding: 45px 0;
+    padding: 35px 0;
 }
 
 .banner h1 {
-    color: #173b60;
-    font-size: 46px;
-    line-height: 1.15;
-    margin: 0 0 25px;
+    color: #21295C;
+    font-size: 36px;
+    line-height: 1.2;
+    margin: 0 0 20px;
 }
 
 .banner h1 span {
-    color: #1769c2;
+    color: #065A82;
 }
 
 .banner p {
-    color: #263648;
-    font-size: 18px;
-    line-height: 1.7;
-    margin: 0 0 30px;
-    max-width: 500px;
+    color: #334155;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0 0 25px;
+    max-width: 450px;
 }
 
 .boton-principal {
     display: inline-block;
-    background-color: #1769b1;
+    background-color: #1C7293;
     color: white;
-    padding: 15px 24px;
-    border-radius: 8px;
+    padding: 12px 20px;
+    border-radius: 7px;
     text-decoration: none;
+    font-size: 15px;
     font-weight: bold;
     transition: background-color 0.2s;
 }
 
 .boton-principal:hover {
-    background-color: #104f88;
+    background-color: #065A82;
 }
 
 
@@ -143,30 +145,33 @@ body {
 .servicios {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    padding-top: 55px;
-    padding-bottom: 65px;
+    gap: 20px;
+    padding-top: 40px;
+    padding-bottom: 45px;
 }
 
 .tarjeta {
     background-color: white;
-    border-radius: 10px;
-    padding: 28px;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.07);
+    border: none;
+    border-radius: 12px;
+    padding: 22px;
+    box-shadow: 0 4px 16px rgba(33, 41, 92, 0.08);
 }
 
 .tarjeta-icono {
-    font-size: 30px;
-    margin-bottom: 15px;
+    font-size: 26px;
+    margin-bottom: 12px;
 }
 
 .tarjeta h2 {
-    color: #173b60;
-    font-size: 20px;
+    color: #21295C;
+    font-size: 18px;
     margin-top: 0;
+    margin-bottom: 12px;
 }
 
 .tarjeta p {
+    font-size: 15px;
     line-height: 1.6;
     margin-bottom: 0;
 }
@@ -177,65 +182,97 @@ body {
 =================================== */
 
 footer {
-    background-color: #173b60;
+    background-color: #1B3B6F;
     color: white;
     text-align: center;
-    padding: 20px;
+    padding: 16px;
 }
 
 footer p {
     margin: 0;
+    font-size: 14px;
 }
 
 
-/* NUEVA COMBINACIÓN DE COLORES */
+/* ===================================
+   ADAPTACIÓN A TABLETS
+=================================== */
 
-body {
-    background-color: #F7F9FC;
-    color: #334155;
+@media (max-width: 900px) {
+
+    .banner-texto {
+        width: 60%;
+    }
+
+    .banner h1 {
+        font-size: 30px;
+    }
+
+    .servicios {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
-.encabezado {
-    background-color: #1B3B6F;
-}
 
-.boton-login {
-    border: 1px solid #9EB3C2;
-}
+/* ===================================
+   ADAPTACIÓN A CELULARES
+=================================== */
 
-.banner h1 {
-    color: #21295C;
-}
+@media (max-width: 600px) {
 
-.banner h1 span {
-    color: #065A82;
-}
+    .contenedor {
+        width: 92%;
+    }
 
-.banner p {
-    color: #334155;
-}
+    .encabezado {
+        padding: 12px 0;
+    }
 
-.boton-principal {
-    background-color: #1C7293;
-    color: white;
-}
+    .navegacion {
+        flex-direction: column;
+        gap: 15px;
+    }
 
-.boton-principal:hover {
-    background-color: #065A82;
-}
+    .marca {
+        font-size: 16px;
+    }
 
-.tarjeta {
-    background-color: white;
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(33, 41, 92, 0.08);
-}
+    .menu {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+    }
 
-.tarjeta h2 {
-    color: #21295C;
-}
+    .banner {
+        min-height: 300px;
+        background-size: cover;
+    }
 
-footer {
-    background-color: #1B3B6F;
-}
+    .banner-contenido {
+        min-height: 300px;
+    }
 
+    .banner-texto {
+        width: 100%;
+        padding: 30px 0;
+    }
+
+    .banner h1 {
+        font-size: 28px;
+    }
+
+    .banner p {
+        font-size: 15px;
+    }
+
+    .servicios {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding-top: 30px;
+        padding-bottom: 35px;
+    }
+
+    .tarjeta {
+        padding: 20px;
+    }
+}

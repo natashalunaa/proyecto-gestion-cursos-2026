@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Iniciar sesión - Institución de Capacitación</title>
+
+    <link rel="stylesheet" href="/css/estilos.css">
+    <link rel="stylesheet" href="/css/login.css">
+</head>
+
+<body>
+
+    <!-- ENCABEZADO -->
+    <header class="encabezado">
+        <div class="contenedor navegacion">
+
+            <a href="/index.html" class="marca">
+                <span class="logo">🎓</span>
+                <span>Institución de Capacitación</span>
+            </a>
+
+            <nav class="menu">
+                <a href="/index.html">Inicio</a>
+
+                <a href="/pages/solicitud.html">
+                    Solicitar capacitación
+                </a>
+
+                <a href="/pages/login.html" class="boton-login">
+                    Iniciar sesión
+                </a>
+            </nav>
+
+        </div>
+    </header>
+
+    <!-- FORMULARIO DE INICIO DE SESIÓN -->
+    <main class="login-contenedor">
+
+        <section class="login-tarjeta">
+
+            <h1>Iniciar sesión</h1>
+
+            <p class="login-descripcion">
+                Ingresá tus credenciales para acceder
+                a la plataforma.
+            </p>
+
+            <form id="form-login">
+
+                <div class="campo">
+                    <label for="usuario">Usuario</label>
+
+                    <input
+                        type="text"
+                        id="usuario"
+                        name="usuario"
+                        placeholder="Ingresá tu usuario"
+                        autocomplete="username"
+                        required>
+                </div>
+
+                <div class="campo">
+                    <label for="contrasena">Contraseña</label>
+
+                    <input
+                        type="password"
+                        id="contrasena"
+                        name="contrasena"
+                        placeholder="Ingresá tu contraseña"
+                        autocomplete="current-password"
+                        required>
+                </div>
+
+                <button type="submit" class="boton-ingresar">
+                    Ingresar
+                </button>
+
+            </form>
+
+            <p class="login-ayuda">
+                ¿Querés solicitar una capacitación?
+                <a href="/pages/solicitud.html">
+                    Completá el formulario
+                </a>
+            </p>
+
+        </section>
+
+    </main>
+
+    <!-- PIE DE PÁGINA -->
+    <footer>
+        <p>Institución de Capacitación - 2026</p>
+    </footer>
+
+        <script>
+        document.getElementById("form-login").addEventListener("submit", async function (evento) {
+            evento.preventDefault();
+            const boton = this.querySelector('button[type="submit"]');
+            boton.disabled = true;
+            try {
+                const respuesta = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "same-origin",
+                    body: JSON.stringify({
+                        usuario: document.getElementById("usuario").value.trim(),
+                        contrasena: document.getElementById("contrasena").value
+                    })
+                });
+                const datos = await respuesta.json();
+                if (!respuesta.ok) throw new Error(datos.error || "No se pudo iniciar sesión.");
+                window.location.href = "/pages/panel-administrativo.html";
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                boton.disabled = false;
+            }
+        });
+    </script>
+
+</body>
+</html>

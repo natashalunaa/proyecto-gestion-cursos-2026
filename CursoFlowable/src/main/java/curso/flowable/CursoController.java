@@ -5,6 +5,10 @@ import curso.flowable.repository.EmpresaRepository;
 import curso.flowable.service.CursoService;
 
 import java.util.Map;
+import java.util.LinkedHashMap;
+import jakarta.servlet.http.HttpSession;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,18 +16,24 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
+import curso.flowable.service.FlowableService;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @RestController
 public class CursoController {
 
     private final EmpresaRepository empresaRepository;
     private final CursoService cursoService;
+    private final FlowableService flowableService;
 
-    public CursoController(EmpresaRepository empresaRepository,
-            CursoService cursoService) {
+    public CursoController(
+            EmpresaRepository empresaRepository,
+            CursoService cursoService,
+            FlowableService flowableService) {
 
         this.empresaRepository = empresaRepository;
         this.cursoService = cursoService;
+        this.flowableService = flowableService;
     }
 
     // Comprobar que Spring Boot funciona
@@ -132,4 +142,49 @@ public class CursoController {
 
         return ResponseEntity.ok(curso);
     }
+
+    // Consultar solo las tareas del usuario que inicio sesion.
+    @GetMapping("/api/tareas/mis-tareas")
+    public ResponseEntity<?> obtenerMisTareas(HttpSession sesion) {
+        String usuario = (String) sesion.getAttribute("usuarioFlowable");
+        if (usuario == null || usuario.isBlank()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Debes iniciar sesion."));
+        }
+        try {
+            JsonNode asignadas = flowableService.obtenerTareasUsuario(usuario);
+            JsonNode candidatas = flowableService.obtenerTareasCandidatas(usuario);
+            Map<String, JsonNode> tareasUnicas = new LinkedHashMap<>();
+            for (JsonNode tarea : asignadas.path("data")) {
+                if (tarea.hasNonNull("id")) tareasUnicas.put(tarea.get("id").asText(), tarea);
+            }
+            for (JsonNode tarea : candidatas.path("data")) {
+                if (tarea.hasNonNull("id") && tarea.path("assignee").isNull()) {
+                    tareasUnicas.putIfAbsent(tarea.get("id").asText(), tarea);
+                }
+            }
+            ObjectNode resultado = new com.fasterxml.jackson.databind.ObjectMapper().createObjectNode();
+            resultado.put("usuario", usuario);
+            ArrayNode lista = resultado.putArray("data");
+            tareasUnicas.values().forEach(lista::add);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "No se pudieron consultar las tareas de Flowable."));
+        }
+    }
+
+    @GetMapping("/api/cursos/instancia/{processInstanceId}")
+    public ResponseEntity<?> obtenerCursoPorInstancia(
+            @PathVariable("processInstanceId") String processInstanceId) {
+
+        Map<String, Object> curso = cursoService.buscarCursoPorProcessInstanceId(processInstanceId);
+
+        if (curso == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(curso);
+    }
+
 }

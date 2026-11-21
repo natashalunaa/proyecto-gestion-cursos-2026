@@ -75,4 +75,11 @@ public class CursoService {
     public Map<String, Object> buscarCursoPorId(Integer cursoId) {
         return cursoRepository.buscarCursoPorId(cursoId);
     }
+
+    // Buscar el curso asociado a una instancia de Flowable
+    public Map<String, Object> buscarCursoPorProcessInstanceId(
+            String processInstanceId) {
+
+        return cursoRepository.buscarCursoPorProcessInstanceId(processInstanceId);
+    }
 }
