@@ -127,14 +127,45 @@
                     boton.type = "button";
                     boton.textContent = "Ver tarea";
 
+
+
                     boton.classList.add("boton-tarea");
+
                     boton.addEventListener("click", async () => {
+                        if (tarea.name === "Registrar y Elaborar propuesta") {
+                            const parametros = new URLSearchParams({
+                                tareaId: tarea.id,
+                                processInstanceId: tarea.processInstanceId
+                            });
+
+                            window.location.href =
+                                `/pages/registrar-propuesta.html?${parametros.toString()}`;
+
+                            return;
+                        }
+
+                        // Abrir el formulario específico de elaboración de propuesta
+                        if (tarea.name === "Registrar y Elaborar propuesta") {
+
+                            window.location.href =
+                                `/pages/registrar-propuesta.html?tareaId=${encodeURIComponent(tarea.id)}`;
+
+                            return;
+                        }
+
+                        // Para las demás tareas mantenemos la consulta actual
                         try {
                             const processInstanceId = tarea.processInstanceId;
 
                             const respuesta = await fetch(
-                                `/api/cursos/instancia/${encodeURIComponent(processInstanceId)}`
+                                `/api/cursos/instancia/${encodeURIComponent(processInstanceId)}`,
+                                { credentials: "same-origin" }
                             );
+
+                            if (respuesta.status === 401) {
+                                window.location.href = "/pages/login.html";
+                                return;
+                            }
 
                             if (!respuesta.ok) {
                                 throw new Error("No se pudo obtener el curso");
@@ -157,11 +188,14 @@
                         }
                     });
 
+
                     acciones.appendChild(boton);
 
 
-                    if (tarea.assignee === resultado.usuario) {
-
+                    if (
+                        tarea.assignee === resultado.usuario &&
+                        tarea.name !== "Registrar y Elaborar propuesta"
+                    ) {
                         const botonCompletar = document.createElement("button");
                         botonCompletar.type = "button";
                         botonCompletar.textContent = "Completar tarea";

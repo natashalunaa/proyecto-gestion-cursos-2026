@@ -6,6 +6,8 @@ import curso.flowable.repository.EmpresaRepository;
 import curso.flowable.repository.CursoRepository;
 import org.springframework.stereotype.Service;
 import java.util.Map;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Service
 public class CursoService {
@@ -81,5 +83,34 @@ public class CursoService {
             String processInstanceId) {
 
         return cursoRepository.buscarCursoPorProcessInstanceId(processInstanceId);
+    }
+
+    // Guardar la propuesta elaborada por el jefe administrativo
+    public void guardarPropuesta(
+            String processInstanceId,
+            String programa,
+            BigDecimal presupuesto,
+            LocalDate fechaInicioPosible,
+            LocalDate fechaFinPropuesta) {
+
+        // Comprobar que las fechas sean correctas
+        if (fechaFinPropuesta.isBefore(fechaInicioPosible)) {
+            throw new IllegalArgumentException(
+                    "La fecha de finalización no puede ser anterior a la fecha de inicio.");
+        }
+
+        // Guardar los datos en PostgreSQL
+        int filasActualizadas = cursoRepository.guardarPropuesta(
+                processInstanceId,
+                programa,
+                presupuesto,
+                fechaInicioPosible,
+                fechaFinPropuesta);
+
+        // Verificar que se haya encontrado el curso
+        if (filasActualizadas == 0) {
+            throw new IllegalArgumentException(
+                    "No se encontró un curso asociado a esta instancia.");
+        }
     }
 }

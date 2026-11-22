@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Registrar propuesta - Gestión de Cursos</title>
+
+    <link rel="stylesheet" href="../css/estilos.css">
+    <link rel="stylesheet" href="../css/detalle-tarea.css">
+</head>
+
+<body>
+
+    <!-- ENCABEZADO -->
+
+    <header class="encabezado">
+        <div class="contenedor navegacion">
+
+            <a href="../index.html" class="marca">
+                Institución de Capacitación
+            </a>
+
+            <nav class="menu">
+                <a href="panel-administrativo.html">
+                    Volver al panel
+                </a>
+            </nav>
+
+        </div>
+    </header>
+
+    <main class="contenedor detalle-tarea">
+
+        <div class="cabecera-detalle">
+
+            <h1>Registrar y Elaborar propuesta</h1>
+
+            <p>
+                Revisá los datos de la solicitud y completá
+                la propuesta de capacitación.
+            </p>
+
+        </div>
+
+        <!-- DATOS DE LA SOLICITUD -->
+
+        <section class="tarjeta-detalle">
+
+            <h2>Datos de la solicitud</h2>
+
+            <div class="grilla-informacion">
+
+                <div class="dato">
+                    <span class="etiqueta">Empresa</span>
+                    <strong id="empresa">Cargando...</strong>
+                </div>
+
+                <div class="dato">
+                    <span class="etiqueta">Temática</span>
+                    <strong id="tematica">Cargando...</strong>
+                </div>
+
+                <div class="dato">
+                    <span class="etiqueta">
+                        Cantidad de participantes
+                    </span>
+                    <strong id="cantidadParticipantes">
+                        Cargando...
+                    </strong>
+                </div>
+
+                <div class="dato">
+                    <span class="etiqueta">
+                        Fechas preferidas
+                    </span>
+                    <strong id="fechasPreferidas">
+                        Cargando...
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="campo-formulario">
+                <label for="descripcion">
+                    Descripción de la solicitud
+                </label>
+
+                <textarea id="descripcion" rows="4" readonly>Cargando...</textarea>
+            </div>
+
+        </section>
+
+        <!-- ELABORACIÓN DE LA PROPUESTA -->
+
+        <section class="tarjeta-detalle">
+
+            <h2>Elaboración de la propuesta</h2>
+
+            <form id="formRegistrarPropuesta" class="formulario-propuesta">
+
+                <!-- PROGRAMA -->
+
+                <div class="campo-formulario">
+
+                    <label for="programa">
+                        Programa del curso *
+                    </label>
+
+                    <textarea id="programa" name="programa" rows="5"
+                        placeholder="Ingresá los contenidos y actividades del curso" required></textarea>
+
+                </div>
+
+                <!-- PRESUPUESTO -->
+
+                <div class="campo-formulario">
+
+                    <label for="presupuesto">
+                        Presupuesto *
+                    </label>
+
+                    <input type="number" id="presupuesto" name="presupuesto" min="0" step="1"
+                        placeholder="Ingresá el presupuesto" required>
+
+                </div>
+
+                <!-- FECHA DE INICIO -->
+
+                <div class="campo-formulario">
+
+                    <label for="fechaInicioPosible">
+                        Fecha de inicio posible *
+                    </label>
+
+                    <input type="date" id="fechaInicioPosible" name="fechaInicioPosible" required>
+
+                </div>
+
+                <!-- FECHA DE FINALIZACIÓN -->
+
+                <div class="campo-formulario">
+
+                    <label for="fechaFinPropuesta">
+                        Fecha de finalización posible *
+                    </label>
+
+                    <input type="date" id="fechaFinPropuesta" name="fechaFinPropuesta" required>
+
+                </div>
+
+                <!-- ACCIONES -->
+
+                <!-- ACCIONES -->
+                <div class="acciones-tarea">
+
+                    <button type="submit" id="btnGuardarPropuesta" class="boton-aprobar">
+                        Guardar propuesta
+                    </button>
+
+                    <button type="button" id="btnCompletarPropuesta" class="boton-aprobar">
+                        Guardar y completar tarea
+                    </button>
+
+                    <p id="mensajePropuesta" role="status" aria-live="polite"></p>
+
+                </div>
+
+
+            </form>
+
+        </section>
+
+    </main>
+
+    <footer>
+        <p>
+            Institución de Capacitación - Gestión de Cursos
+        </p>
+    </footer>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarSolicitud();
+
+            document.getElementById("formRegistrarPropuesta")
+                .addEventListener("submit", (evento) => {
+                    guardarPropuesta(evento, false);
+                });
+
+            document.getElementById("btnCompletarPropuesta")
+                .addEventListener("click", (evento) => {
+                    guardarPropuesta(evento, true);
+                });
+        });
+
+        function obtenerParametros() {
+            const parametros = new URLSearchParams(window.location.search);
+
+            return {
+                tareaId: parametros.get("tareaId"),
+                processInstanceId: parametros.get("processInstanceId")
+            };
+        }
+
+        async function cargarSolicitud() {
+            const { tareaId, processInstanceId } = obtenerParametros();
+
+            if (!tareaId || !processInstanceId) {
+                alert("No se encontró la tarea seleccionada.");
+                window.location.href = "panel-administrativo.html";
+                return;
+            }
+
+            try {
+                const respuesta = await fetch(
+                    `/api/cursos/instancia/${encodeURIComponent(processInstanceId)}`,
+                    { credentials: "same-origin" }
+                );
+
+                if (respuesta.status === 401) {
+                    window.location.href = "/pages/login.html";
+                    return;
+                }
+
+                if (!respuesta.ok) {
+                    throw new Error("No se pudo cargar la solicitud.");
+                }
+
+                const curso = await respuesta.json();
+
+                document.getElementById("empresa").textContent =
+                    curso.empresa || "No informado";
+
+                document.getElementById("tematica").textContent =
+                    curso.tematica || "No informado";
+
+                document.getElementById("cantidadParticipantes").textContent =
+                    curso.cantidad_participantes ?? "No informado";
+
+                document.getElementById("fechasPreferidas").textContent =
+                    curso.fechas_preferidas || "No informado";
+
+                document.getElementById("descripcion").value =
+                    curso.descripcion || "No informado";
+
+                // Recuperar una propuesta guardada anteriormente.
+                document.getElementById("programa").value =
+                    curso.programa || "";
+
+                document.getElementById("presupuesto").value =
+                    curso.presupuesto ?? "";
+
+                document.getElementById("fechaInicioPosible").value =
+                    curso.fecha_inicio_posible
+                        ? String(curso.fecha_inicio_posible).substring(0, 10)
+                        : "";
+
+                document.getElementById("fechaFinPropuesta").value =
+                    curso.fecha_fin_propuesta
+                        ? String(curso.fecha_fin_propuesta).substring(0, 10)
+                        : "";
+
+            } catch (error) {
+                console.error("Error al cargar solicitud:", error);
+                alert("No se pudieron cargar los datos de la solicitud.");
+            }
+        }
+
+        async function guardarPropuesta(evento, completarTarea) {
+            evento.preventDefault();
+
+            const { tareaId, processInstanceId } = obtenerParametros();
+
+            const botonGuardar =
+                document.getElementById("btnGuardarPropuesta");
+
+            const botonCompletar =
+                document.getElementById("btnCompletarPropuesta");
+
+            const mensaje =
+                document.getElementById("mensajePropuesta");
+
+            const formulario =
+                document.getElementById("formRegistrarPropuesta");
+
+            if (!formulario.reportValidity()) {
+                return;
+            }
+
+            const programa =
+                document.getElementById("programa").value.trim();
+
+            const presupuesto =
+                document.getElementById("presupuesto").value;
+
+            const fechaInicioPosible =
+                document.getElementById("fechaInicioPosible").value;
+
+            const fechaFinPropuesta =
+                document.getElementById("fechaFinPropuesta").value;
+
+            if (!processInstanceId || !tareaId) {
+                mensaje.textContent =
+                    "No se encontró la tarea o la instancia del curso.";
+                return;
+            }
+
+            if (!programa || !presupuesto ||
+                !fechaInicioPosible || !fechaFinPropuesta) {
+
+                mensaje.textContent = "Completá todos los campos.";
+                return;
+            }
+
+            if (fechaFinPropuesta < fechaInicioPosible) {
+                mensaje.textContent =
+                    "La fecha de finalización no puede ser anterior a la de inicio.";
+                return;
+            }
+
+            const datos = {
+                programa,
+                presupuesto,
+                fechaInicioPosible,
+                fechaFinPropuesta
+            };
+
+            let url;
+
+            if (completarTarea) {
+                url = `/api/tareas/${encodeURIComponent(tareaId)}/completar-propuesta`;
+            } else {
+                url = `/api/cursos/instancia/${encodeURIComponent(processInstanceId)}/propuesta`;
+            }
+
+            botonGuardar.disabled = true;
+            botonCompletar.disabled = true;
+
+            mensaje.textContent = completarTarea
+                ? "Guardando propuesta y completando tarea..."
+                : "Guardando propuesta...";
+
+            try {
+                const respuesta = await fetch(url, {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(datos)
+                });
+
+                if (respuesta.status === 401) {
+                    window.location.href = "/pages/login.html";
+                    return;
+                }
+
+                const resultado = await respuesta.json();
+
+                if (!respuesta.ok) {
+                    throw new Error(
+                        resultado.error ||
+                        "No se pudo procesar la propuesta."
+                    );
+                }
+
+                if (completarTarea) {
+                    mensaje.textContent =
+                        "¡Propuesta guardada y tarea completada correctamente!";
+
+                    // Regresar al panel después de completar la tarea.
+                    window.location.href = "panel-administrativo.html";
+                } else {
+                    mensaje.textContent =
+                        "¡Propuesta guardada correctamente!";
+                }
+
+            } catch (error) {
+                console.error("Error al procesar propuesta:", error);
+                mensaje.textContent = error.message;
+
+            } finally {
+                botonGuardar.disabled = false;
+                botonCompletar.disabled = false;
+            }
+        }
+    </script>
+
+
+</body>
+
+</html>
