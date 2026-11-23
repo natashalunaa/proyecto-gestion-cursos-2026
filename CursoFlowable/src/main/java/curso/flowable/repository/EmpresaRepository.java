@@ -72,4 +72,32 @@ public class EmpresaRepository {
 
         return keyHolder.getKey().intValue();
     }
+
+    public boolean tieneCuenta(Integer empresaId) {
+        Integer cantidad = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM empresas "
+                        + "WHERE id = ? "
+                        + "AND usuario_acceso IS NOT NULL",
+                Integer.class,
+                empresaId);
+
+        return cantidad != null && cantidad > 0;
+    }
+
+    public int guardarCredenciales(
+            Integer empresaId,
+            String usuario,
+            String passwordHash) {
+
+        String sql = "UPDATE empresas "
+                + "SET usuario_acceso = ?, password_acceso = ? "
+                + "WHERE id = ? "
+                + "AND usuario_acceso IS NULL";
+
+        return jdbcTemplate.update(
+                sql,
+                usuario,
+                passwordHash,
+                empresaId);
+    }
 }

@@ -53,3 +53,8 @@ CursoFlowable/src/main/resources/application.properties
 # Archivos de pruebas locales
 *.pid
 hs_err_pid*
+
+/flowable-integracion.env
+/docker/flowable-inspect-backup.json
+
+/flowable-contenedor.env

@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import java.security.SecureRandom;
 
 @Service
 public class CursoService {
@@ -112,5 +114,56 @@ public class CursoService {
             throw new IllegalArgumentException(
                     "No se encontró un curso asociado a esta instancia.");
         }
+    }
+
+    // Habilitar la cuenta de una empresa cuando acepta la propuesta
+    public void habilitarAccesoEmpresa(String processInstanceId) {
+
+        // Buscar el curso asociado a la instancia de Flowable
+        Map<String, Object> curso = cursoRepository.buscarCursoPorProcessInstanceId(processInstanceId);
+
+        if (curso == null) {
+            throw new IllegalArgumentException(
+                    "No se encontró el curso asociado al proceso.");
+        }
+
+        // Obtener la empresa asociada al curso
+        Integer empresaId = ((Number) curso.get("empresa_id")).intValue();
+
+        // Si ya tiene cuenta, conservamos sus credenciales
+        if (empresaRepository.tieneCuenta(empresaId)) {
+            return;
+        }
+
+        // Generar un usuario basado en el ID de la empresa
+        String usuario = "empresa_" + empresaId;
+
+        // Generar una contraseña aleatoria
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[24];
+        random.nextBytes(bytes);
+
+        String password = java.util.Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(bytes);
+
+        // Proteger la contraseña con BCrypt
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String passwordHash = encoder.encode(password);
+
+        // Guardar las credenciales sin sobrescribir una cuenta existente
+        int filas = empresaRepository.guardarCredenciales(
+                empresaId,
+                usuario,
+                passwordHash);
+
+        if (filas == 0 && !empresaRepository.tieneCuenta(empresaId)) {
+            throw new IllegalStateException(
+                    "No se pudo habilitar la cuenta de la empresa.");
+        }
+
+        // IMPORTANTE:
+        // La contraseña original todavía no se entrega a la empresa.
+        // Debemos definir cómo comunicarla o simular su entrega.
     }
 }
