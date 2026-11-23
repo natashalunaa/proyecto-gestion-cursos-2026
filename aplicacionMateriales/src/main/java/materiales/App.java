@@ -219,6 +219,10 @@ public class App extends JFrame {
     }
 
     public static void main(String[] args) {
+       java.util.TimeZone.setDefault(
+            java.util.TimeZone.getTimeZone("UTC")
+        );
+
         SwingUtilities.invokeLater(() -> {
             App ventana = new App();
             ventana.setVisible(true);
