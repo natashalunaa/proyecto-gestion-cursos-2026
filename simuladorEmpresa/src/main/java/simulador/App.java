@@ -1,6 +1,7 @@
 package simulador;
 
 import java.util.Scanner;
+import java.util.List;
 
 public class App {
 
@@ -68,37 +69,53 @@ public class App {
     }
 
 
+        
     private static void gestionarMensaje(
-        Scanner scanner,
-        FlowableClient flowable,
-        String titulo,
-        String mensaje) {
+            Scanner scanner,
+            FlowableClient flowable,
+            String titulo,
+            String mensaje) {
 
         System.out.println("\n=== " + titulo + " ===");
 
-        int cantidad = flowable.listarEjecuciones(mensaje);
+        List<String> ejecuciones = flowable.listarEjecuciones(mensaje);
 
-        if (cantidad == -1) {
-            System.out.println("No se pudo consultar las ejecuciones.");
+        if (ejecuciones == null) {
+            System.out.println("No se pudieron consultar las ejecuciones.");
             return;
         }
 
-        if (cantidad == 0) {
+        if (ejecuciones.isEmpty()) {
             System.out.println(
                     "No hay ejecuciones esperando el mensaje: " + mensaje
             );
             return;
         }
 
-        System.out.println("Ejecuciones encontradas: " + cantidad);
+        System.out.println("\n0. Cancelar operación");
+        System.out.print("Seleccioná una ejecución: ");
 
-        System.out.print("Ingresá el ID de ejecución: ");
-        String executionId = scanner.nextLine().trim();
+        String entrada = scanner.nextLine().trim();
+        int opcion;
 
-        if (executionId.isEmpty()) {
-            System.out.println("No ingresaste un ID.");
+        try {
+            opcion = Integer.parseInt(entrada);
+        } catch (NumberFormatException e) {
+            System.out.println("Debés ingresar un número válido.");
             return;
         }
+
+        if (opcion == 0) {
+            System.out.println("Operación cancelada.");
+            return;
+        }
+
+        if (opcion < 1 || opcion > ejecuciones.size()) {
+            System.out.println("La opción seleccionada no existe.");
+            return;
+        }
+
+        String executionId = ejecuciones.get(opcion - 1);
 
         System.out.print("¿Confirmás el envío? (s/n): ");
         String confirmacion = scanner.nextLine().trim();
@@ -109,5 +126,6 @@ public class App {
             System.out.println("Operación cancelada.");
         }
     }
+
 }
 

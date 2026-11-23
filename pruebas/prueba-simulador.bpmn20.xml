@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             targetNamespace="http://gestioncursos/pruebas">
+
+  <message id="MensajeAceptacion" name="Msg_acepta"/>
+
+  <process id="PruebaSimuladorEmpresa"
+           name="Prueba Simulador Empresa"
+           isExecutable="true">
+
+    <startEvent id="inicio"/>
+    <sequenceFlow id="flujo1" sourceRef="inicio" targetRef="esperarAceptacion"/>
+
+    <intermediateCatchEvent id="esperarAceptacion"
+                            name="Esperar aceptación">
+      <messageEventDefinition messageRef="MensajeAceptacion"/>
+    </intermediateCatchEvent>
+
+    <sequenceFlow id="flujo2" sourceRef="esperarAceptacion" targetRef="fin"/>
+    <endEvent id="fin"/>
+
+  </process>
+</definitions>

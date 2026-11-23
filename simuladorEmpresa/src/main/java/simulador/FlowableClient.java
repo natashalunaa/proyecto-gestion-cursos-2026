@@ -8,6 +8,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FlowableClient {
 
@@ -60,7 +64,8 @@ public class FlowableClient {
     }
 
     // Este método consulta las ejecuciones que esperan un mensaje.
-    public int listarEjecuciones(String mensaje) {
+    
+    public List<String> listarEjecuciones(String mensaje) {
 
         String url = BASE_URL
                 + "/runtime/executions"
@@ -78,41 +83,55 @@ public class FlowableClient {
                     HttpResponse.BodyHandlers.ofString()
             );
 
-            System.out.println("Código HTTP: " + respuesta.statusCode());
-
             if (respuesta.statusCode() != 200) {
-                System.out.println("Error al consultar Flowable.");
+                System.out.println("Error HTTP: " + respuesta.statusCode());
                 System.out.println(respuesta.body());
-                return -1;
+                return null;
             }
 
-            String cuerpo = respuesta.body();
-            System.out.println(cuerpo);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode json = mapper.readTree(respuesta.body());
 
-            // Buscar el valor de "total" en la respuesta JSON
-            java.util.regex.Matcher matcher = java.util.regex.Pattern
-                    .compile("\"total\"\\s*:\\s*(\\d+)")
-                    .matcher(cuerpo);
+            List<String> ids = new ArrayList<>();
+            JsonNode ejecuciones = json.path("data");
 
-            if (!matcher.find()) {
-                System.out.println("No se pudo interpretar la respuesta de Flowable.");
-                return -1;
+            if (!ejecuciones.isArray()) {
+                System.out.println("Respuesta inesperada de Flowable.");
+                return null;
             }
 
-            return Integer.parseInt(matcher.group(1));
+            for (JsonNode ejecucion : ejecuciones) {
+                String id = ejecucion.path("id").asText();
+                String actividad = ejecucion.path("activityId").asText();
+
+                if (id.isBlank()) {
+                    System.out.println("Una ejecución no tiene ID válido.");
+                    return null;
+                }
+
+                ids.add(id);
+
+                System.out.println(
+                        ids.size() + ". Actividad: " + actividad
+                        + " | ID: " + id
+                );
+            }
+
+            return ids;
 
         } catch (IOException e) {
             System.out.println(
-                    "No se pudo conectar con Flowable: " + e.getMessage()
+                    "No se pudo consultar Flowable: " + e.getMessage()
             );
-            return -1;
+            return null;
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             System.out.println("La consulta fue interrumpida.");
-            return -1;
+            return null;
         }
     }
+
 
     // Este método envía un mensaje a una ejecución específica.
     public void enviarMensaje(String executionId, String mensaje) {
