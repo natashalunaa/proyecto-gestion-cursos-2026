@@ -58,3 +58,9 @@ hs_err_pid*
 /docker/flowable-inspect-backup.json
 
 /flowable-contenedor.env
+
+# Python - minería de procesos
+.venv/
+__pycache__/
+*.pyc
+/mineriaProcesos/eventos.csv
