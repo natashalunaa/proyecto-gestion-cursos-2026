@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+    xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:flowable="http://flowable.org/bpmn"
+    targetNamespace="http://www.flowable.org/processdef">
+
+    <process id="PruebaMateriales"
+             name="Prueba de preparación de materiales"
+             isExecutable="true">
+
+        <startEvent id="inicio"/>
+
+        <sequenceFlow id="flujo1"
+                      sourceRef="inicio"
+                      targetRef="prepararMateriales"/>
+
+        <userTask id="prepararMateriales"
+                  name="Preparar materiales"
+                  flowable:candidateUsers="admin"/>
+
+        <sequenceFlow id="flujo2"
+                      sourceRef="prepararMateriales"
+                      targetRef="fin"/>
+
+        <endEvent id="fin"/>
+
+    </process>
+</definitions>
