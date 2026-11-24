@@ -8,9 +8,31 @@ if (-not (Test-Path (Join-Path $backend 'pom.xml'))) {
     exit 1
 }
 
-# Variables solo para esta sesion de PowerShell y el proceso Java hijo.
-$env:DB_PASSWORD = 'flowable'
-$env:JAVA_TOOL_OPTIONS = '-Duser.timezone=America/Argentina/Buenos_Aires'
+# Variables de entorno solo para esta sesion de PowerShell y el proceso Java hijo.
+$env:DB_PASSWORD = 'flow10'
+$env:SERVER_PORT = '8081'
+$env:SPRING_LIQUIBASE_ENABLED = 'false'
+$env:SPRING_DATASOURCE_URL = 'jdbc:postgresql://localhost:5433/institucion_cursos'
+$env:SPRING_DATASOURCE_USERNAME = 'flowable'
+$env:SPRING_DATASOURCE_PASSWORD = $env:DB_PASSWORD
+$config = docker inspect flowable-temporal | ConvertFrom-Json
+
+$entrada = $config.Config.Env | Where-Object {
+    $_ -like 'FLOWABLE_INTEGRATION_SECRET=*'
+} | Select-Object -First 1
+
+if (-not $entrada) {
+    throw "El contenedor no tiene configurado el secreto de integracion."
+}
+
+$env:INTEGRACION_FLOWABLE_SECRET = $entrada.Substring('FLOWABLE_INTEGRATION_SECRET='.Length)
+
+if ([string]::IsNullOrWhiteSpace($env:INTEGRACION_FLOWABLE_SECRET)) {
+    throw "El secreto de integracion esta vacio."
+}
+
+Write-Host "Secreto de integracion configurado correctamente."
+$env:JAVA_TOOL_OPTIONS = '-Duser.timezone=UTC'
 
 if (-not (Get-Command mvn -ErrorAction SilentlyContinue)) {
     Write-Error 'No se encontro Maven (mvn) en PATH.'
