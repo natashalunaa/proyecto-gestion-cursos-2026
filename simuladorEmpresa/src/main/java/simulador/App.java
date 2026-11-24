@@ -28,12 +28,11 @@ public class App {
                 opcion = -1;
             }
 
-            
             switch (opcion) {
 
                 case 1:
                     gestionarMensaje(scanner, flowable,
-                            "ACEPTAR PROPUESTA", "Msg_acepta");
+                            "ACEPTAR PROPUESTA", "msgAceptacion");
                     break;
 
                 case 2:
@@ -68,8 +67,6 @@ public class App {
         scanner.close();
     }
 
-
-        
     private static void gestionarMensaje(
             Scanner scanner,
             FlowableClient flowable,
@@ -87,8 +84,7 @@ public class App {
 
         if (ejecuciones.isEmpty()) {
             System.out.println(
-                    "No hay ejecuciones esperando el mensaje: " + mensaje
-            );
+                    "No hay ejecuciones esperando el mensaje: " + mensaje);
             return;
         }
 
@@ -128,4 +124,3 @@ public class App {
     }
 
 }
-

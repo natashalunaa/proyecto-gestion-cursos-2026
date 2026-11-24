@@ -1,4 +1,3 @@
-
 package curso.flowable;
 
 import curso.flowable.dto.SolicitudCurso;
@@ -7,6 +6,7 @@ import curso.flowable.service.CursoService;
 import curso.flowable.service.FlowableService;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -27,462 +27,743 @@ import java.util.Map;
 @RestController
 public class CursoController {
 
-    private final EmpresaRepository empresaRepository;
-    private final CursoService cursoService;
-    private final FlowableService flowableService;
+        private final EmpresaRepository empresaRepository;
+        private final CursoService cursoService;
+        private final FlowableService flowableService;
 
-    public CursoController(
-            EmpresaRepository empresaRepository,
-            CursoService cursoService,
-            FlowableService flowableService) {
+        public CursoController(
+                        EmpresaRepository empresaRepository,
+                        CursoService cursoService,
+                        FlowableService flowableService) {
 
-        this.empresaRepository = empresaRepository;
-        this.cursoService = cursoService;
-        this.flowableService = flowableService;
-    }
-
-    @GetMapping("/api/cursos/saludo")
-    public String saludo() {
-        return "API de Gestion de Cursos funcionando correctamente";
-    }
-
-    @GetMapping("/api/cursos/probar-bdd")
-    public ResponseEntity<?> probarBaseDeDatos() {
-        try {
-            Integer cantidadEmpresas = empresaRepository.contarEmpresas();
-
-            return ResponseEntity.ok(
-                    "Conexion con PostgreSQL correcta. Empresas registradas: "
-                            + cantidadEmpresas);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-
-            return ResponseEntity.internalServerError()
-                    .body("No se pudo consultar PostgreSQL.");
-        }
-    }
-
-    // Registrar una solicitud e iniciar el proceso BPMN.
-    @PostMapping("/api/cursos/iniciar")
-    public ResponseEntity<?> iniciarCurso(
-            @RequestBody SolicitudCurso solicitud) {
-
-        if (solicitud.getCuit() == null
-                || solicitud.getCuit().isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body("Debe indicar el CUIT de la empresa.");
+                this.empresaRepository = empresaRepository;
+                this.cursoService = cursoService;
+                this.flowableService = flowableService;
         }
 
-        if (solicitud.tematica() == null
-                || solicitud.tematica().isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body("Debe indicar la tematica del curso.");
+        // ==========================================
+        // COMPROBAR FUNCIONAMIENTO DE LA API
+        // ==========================================
+
+        @GetMapping("/api/cursos/saludo")
+        public String saludo() {
+
+                return "API de Gestion de Cursos funcionando correctamente";
         }
 
-        Integer empresaId = cursoService.buscarEmpresaPorCuit(
-                solicitud.getCuit());
+        // ==========================================
+        // COMPROBAR CONEXION CON POSTGRESQL
+        // ==========================================
 
-        if (empresaId == null) {
+        @GetMapping("/api/cursos/probar-bdd")
+        public ResponseEntity<?> probarBaseDeDatos() {
 
-            if (solicitud.getEmpresa() == null
-                    || solicitud.getEmpresa().isBlank()
-                    || solicitud.getContacto() == null
-                    || solicitud.getContacto().isBlank()
-                    || solicitud.getEmail() == null
-                    || solicitud.getEmail().isBlank()) {
+                try {
 
-                return ResponseEntity.badRequest()
-                        .body("Debe completar los datos de la empresa.");
-            }
+                        Integer cantidadEmpresas = empresaRepository.contarEmpresas();
 
-            try {
-                empresaId = cursoService.registrarEmpresa(
-                        solicitud.getCuit(),
-                        solicitud.getEmpresa(),
-                        solicitud.getContacto(),
-                        solicitud.getEmail(),
-                        solicitud.getTelefono());
+                        return ResponseEntity.ok(
+                                        "Conexion con PostgreSQL correcta. Empresas registradas: "
+                                                        + cantidadEmpresas);
 
-            } catch (Exception e) {
-                e.printStackTrace();
+                } catch (Exception e) {
 
-                return ResponseEntity.internalServerError()
-                        .body("No se pudo registrar la empresa.");
-            }
-        }
+                        e.printStackTrace();
 
-        solicitud.setEmpresaId(empresaId);
-
-        try {
-            String processInstanceId =
-                    cursoService.registrarSolicitud(solicitud);
-
-            return ResponseEntity.ok(Map.of(
-                    "mensaje", "Solicitud de curso registrada correctamente",
-                    "processInstanceId", processInstanceId));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-
-            return ResponseEntity.internalServerError()
-                    .body("Error al iniciar o registrar el curso.");
-        }
-    }
-
-    @GetMapping("/api/cursos/{id}")
-    public ResponseEntity<?> obtenerCurso(
-            @PathVariable("id") Integer id) {
-
-        Map<String, Object> curso = cursoService.buscarCursoPorId(id);
-
-        if (curso == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(curso);
-    }
-
-    // Consultar tareas asignadas y candidatas del usuario.
-    @GetMapping("/api/tareas/mis-tareas")
-    public ResponseEntity<?> obtenerMisTareas(HttpSession sesion) {
-
-        String usuario =
-                (String) sesion.getAttribute("usuarioFlowable");
-
-        if (usuario == null || usuario.isBlank()) {
-            return ResponseEntity.status(401)
-                    .body(Map.of("error", "Debes iniciar sesion."));
-        }
-
-        try {
-            JsonNode asignadas =
-                    flowableService.obtenerTareasUsuario(usuario);
-
-            JsonNode candidatas =
-                    flowableService.obtenerTareasCandidatas(usuario);
-
-            Map<String, JsonNode> tareasUnicas =
-                    new LinkedHashMap<>();
-
-            for (JsonNode tarea : asignadas.path("data")) {
-                if (tarea.hasNonNull("id")) {
-                    tareasUnicas.put(tarea.get("id").asText(), tarea);
+                        return ResponseEntity.internalServerError()
+                                        .body("No se pudo consultar PostgreSQL.");
                 }
-            }
+        }
 
-            for (JsonNode tarea : candidatas.path("data")) {
-                if (tarea.hasNonNull("id")
-                        && tarea.path("assignee").isNull()) {
-                    tareasUnicas.putIfAbsent(
-                            tarea.get("id").asText(), tarea);
+        // ==========================================
+        // REGISTRAR SOLICITUD E INICIAR PROCESO BPMN
+        // ==========================================
+
+        @PostMapping("/api/cursos/iniciar")
+        public ResponseEntity<?> iniciarCurso(
+                        @RequestBody SolicitudCurso solicitud) {
+
+                if (solicitud.getCuit() == null
+                                || solicitud.getCuit().isBlank()) {
+
+                        return ResponseEntity.badRequest()
+                                        .body("Debe indicar el CUIT de la empresa.");
                 }
-            }
 
-            ObjectNode resultado =
-                    new com.fasterxml.jackson.databind.ObjectMapper()
-                            .createObjectNode();
+                if (solicitud.tematica() == null
+                                || solicitud.tematica().isBlank()) {
 
-            resultado.put("usuario", usuario);
+                        return ResponseEntity.badRequest()
+                                        .body("Debe indicar la tematica del curso.");
+                }
 
-            ArrayNode lista = resultado.putArray("data");
-            tareasUnicas.values().forEach(lista::add);
+                // Buscar si la empresa ya existe
+                Integer empresaId = cursoService.buscarEmpresaPorCuit(
+                                solicitud.getCuit());
 
-            return ResponseEntity.ok(resultado);
+                // Si no existe, registrar una empresa nueva
+                if (empresaId == null) {
 
-        } catch (Exception e) {
-            e.printStackTrace();
+                        if (solicitud.getEmpresa() == null
+                                        || solicitud.getEmpresa().isBlank()
+                                        || solicitud.getContacto() == null
+                                        || solicitud.getContacto().isBlank()
+                                        || solicitud.getEmail() == null
+                                        || solicitud.getEmail().isBlank()) {
 
-            return ResponseEntity.internalServerError()
-                    .body(Map.of(
-                            "error",
-                            "No se pudieron consultar las tareas de Flowable."));
-        }
-    }
+                                return ResponseEntity.badRequest()
+                                                .body("Debe completar los datos de la empresa.");
+                        }
 
-    @GetMapping("/api/cursos/instancia/{processInstanceId}")
-    public ResponseEntity<?> obtenerCursoPorInstancia(
-            @PathVariable("processInstanceId")
-            String processInstanceId) {
+                        try {
 
-        Map<String, Object> curso =
-                cursoService.buscarCursoPorProcessInstanceId(
-                        processInstanceId);
+                                empresaId = cursoService.registrarEmpresa(
+                                                solicitud.getCuit(),
+                                                solicitud.getEmpresa(),
+                                                solicitud.getContacto(),
+                                                solicitud.getEmail(),
+                                                solicitud.getTelefono());
 
-        if (curso == null) {
-            return ResponseEntity.notFound().build();
-        }
+                        } catch (Exception e) {
 
-        return ResponseEntity.ok(curso);
-    }
+                                e.printStackTrace();
 
-    // Completar una tarea normal.
-    @PostMapping("/api/tareas/{tareaId}/completar")
-    public ResponseEntity<?> completarTarea(
-            @PathVariable("tareaId") String tareaId,
-            HttpSession sesion) {
+                                return ResponseEntity.internalServerError()
+                                                .body("No se pudo registrar la empresa.");
+                        }
+                }
 
-        String usuario =
-                (String) sesion.getAttribute("usuarioFlowable");
+                // Asociar la solicitud a la empresa
+                solicitud.setEmpresaId(empresaId);
 
-        if (usuario == null || usuario.isBlank()) {
-            return ResponseEntity.status(401)
-                    .body(Map.of("error", "Debes iniciar sesion."));
-        }
+                try {
 
-        try {
-            JsonNode tarea =
-                    flowableService.obtenerTareaPorId(tareaId);
+                        String processInstanceId = cursoService.registrarSolicitud(solicitud);
 
-            if (tarea == null) {
-                return ResponseEntity.status(404)
-                        .body(Map.of("error", "La tarea no existe."));
-            }
+                        return ResponseEntity.ok(Map.of(
+                                        "mensaje",
+                                        "Solicitud de curso registrada correctamente",
+                                        "processInstanceId",
+                                        processInstanceId));
 
-            String responsable =
-                    tarea.path("assignee").asText("");
+                } catch (Exception e) {
 
-            if (!usuario.equals(responsable)) {
-                return ResponseEntity.status(403)
-                        .body(Map.of(
-                                "error",
-                                "No tienes permiso para completar esta tarea."));
-            }
+                        e.printStackTrace();
 
-            // La propuesta se completa por su endpoint específico.
-            if ("Registrar y Elaborar propuesta"
-                    .equals(tarea.path("name").asText(""))) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of(
-                                "error",
-                                "La propuesta debe completarse desde su formulario."));
-            }
-
-            flowableService.completarTarea(tareaId);
-
-            return ResponseEntity.ok(Map.of(
-                    "mensaje", "Tarea completada correctamente."));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-
-            return ResponseEntity.internalServerError()
-                    .body(Map.of(
-                            "error",
-                            "No se pudo completar la tarea."));
-        }
-    }
-
-    // Guardar la propuesta en PostgreSQL sin completar la tarea.
-    @PostMapping("/api/cursos/instancia/{processInstanceId}/propuesta")
-    public ResponseEntity<?> guardarPropuesta(
-            @PathVariable("processInstanceId")
-            String processInstanceId,
-            @RequestBody Map<String, Object> datos,
-            HttpSession sesion) {
-
-        String usuario =
-                (String) sesion.getAttribute("usuarioFlowable");
-
-        if (usuario == null || usuario.isBlank()) {
-            return ResponseEntity.status(401)
-                    .body(Map.of("error", "Debes iniciar sesion."));
+                        return ResponseEntity.internalServerError()
+                                        .body("Error al iniciar o registrar el curso.");
+                }
         }
 
-        if (!"jefe_admin".equals(usuario)) {
-            return ResponseEntity.status(403)
-                    .body(Map.of(
-                            "error",
-                            "No tienes permiso para elaborar propuestas."));
+        // ==========================================
+        // CONSULTAR CURSO POR ID
+        // ==========================================
+
+        @GetMapping("/api/cursos/{id}")
+        public ResponseEntity<?> obtenerCurso(
+                        @PathVariable("id") Integer id) {
+
+                Map<String, Object> curso = cursoService.buscarCursoPorId(id);
+
+                if (curso == null) {
+
+                        return ResponseEntity.notFound().build();
+                }
+
+                return ResponseEntity.ok(curso);
         }
 
-        try {
-            String programa =
-                    String.valueOf(datos.getOrDefault("programa", "")).trim();
+        // ==========================================
+        // CONSULTAR TAREAS DEL USUARIO
+        // ==========================================
 
-            if (programa.isBlank()) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of(
-                                "error",
-                                "El programa es obligatorio."));
-            }
+        @GetMapping("/api/tareas/mis-tareas")
+        public ResponseEntity<?> obtenerMisTareas(
+                        HttpSession sesion) {
 
-            BigDecimal presupuesto = new BigDecimal(
-                    String.valueOf(datos.get("presupuesto")));
+                String usuario = (String) sesion.getAttribute("usuarioFlowable");
 
-            if (presupuesto.signum() < 0) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of(
-                                "error",
-                                "El presupuesto no puede ser negativo."));
-            }
+                // Verificar que exista una sesion activa
+                if (usuario == null || usuario.isBlank()) {
 
-            LocalDate fechaInicio = LocalDate.parse(
-                    String.valueOf(datos.get("fechaInicioPosible")));
+                        return ResponseEntity.status(401)
+                                        .body(Map.of(
+                                                        "error",
+                                                        "Debes iniciar sesion."));
+                }
 
-            LocalDate fechaFin = LocalDate.parse(
-                    String.valueOf(datos.get("fechaFinPropuesta")));
+                try {
 
-            if (fechaFin.isBefore(fechaInicio)) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of(
-                                "error",
-                                "La fecha de fin no puede ser anterior al inicio."));
-            }
+                        // Consultar tareas asignadas al usuario
+                        JsonNode asignadas = flowableService.obtenerTareasUsuario(usuario);
 
-            cursoService.guardarPropuesta(
-                    processInstanceId,
-                    programa,
-                    presupuesto,
-                    fechaInicio,
-                    fechaFin);
+                        // Consultar tareas disponibles para reclamar
+                        JsonNode candidatas = flowableService.obtenerTareasCandidatas(usuario);
 
-            return ResponseEntity.ok(Map.of(
-                    "mensaje", "Propuesta guardada correctamente."));
+                        // Evitar tareas duplicadas
+                        Map<String, JsonNode> tareasUnicas = new LinkedHashMap<>();
 
-        } catch (IllegalArgumentException | NullPointerException e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of(
-                            "error",
-                            "Datos invalidos: " + e.getMessage()));
+                        // Incorporar tareas asignadas
+                        for (JsonNode tarea : asignadas.path("data")) {
 
-        } catch (Exception e) {
-            e.printStackTrace();
+                                if (tarea.hasNonNull("id")) {
 
-            return ResponseEntity.internalServerError()
-                    .body(Map.of(
-                            "error",
-                            "No se pudo guardar la propuesta."));
+                                        tareasUnicas.put(
+                                                        tarea.get("id").asText(),
+                                                        tarea);
+                                }
+                        }
+
+                        // Incorporar tareas candidatas sin asignar
+                        for (JsonNode tarea : candidatas.path("data")) {
+
+                                if (tarea.hasNonNull("id")
+                                                && tarea.path("assignee").isNull()) {
+
+                                        tareasUnicas.putIfAbsent(
+                                                        tarea.get("id").asText(),
+                                                        tarea);
+                                }
+                        }
+
+                        // Crear la respuesta JSON
+                        ObjectMapper mapper = new ObjectMapper();
+
+                        ObjectNode resultado = mapper.createObjectNode();
+
+                        resultado.put("usuario", usuario);
+
+                        ArrayNode lista = resultado.putArray("data");
+
+                        // ==========================================
+                        // INCORPORAR INFORMACION DEL CURSO
+                        // ==========================================
+
+                        for (JsonNode tarea : tareasUnicas.values()) {
+
+                                // Copiar los datos originales de Flowable
+                                ObjectNode tareaCompleta = tarea.deepCopy();
+
+                                // Obtener el identificador de la instancia
+                                String processInstanceId = tarea.path("processInstanceId").asText("");
+
+                                // Buscar el curso asociado en PostgreSQL
+                                Map<String, Object> curso = null;
+
+                                if (!processInstanceId.isBlank()) {
+
+                                        curso = cursoService
+                                                        .buscarCursoPorProcessInstanceId(
+                                                                        processInstanceId);
+                                }
+
+                                // Crear un objeto con los datos del curso
+                                ObjectNode datosCurso = tareaCompleta.putObject("curso");
+
+                                if (curso != null) {
+
+                                        datosCurso.put("encontrado", true);
+
+                                        datosCurso.set(
+                                                        "id",
+                                                        mapper.valueToTree(curso.get("id")));
+
+                                        datosCurso.set(
+                                                        "tematica",
+                                                        mapper.valueToTree(curso.get("tematica")));
+
+                                        datosCurso.set(
+                                                        "empresa",
+                                                        mapper.valueToTree(curso.get("empresa")));
+
+                                        datosCurso.set(
+                                                        "cantidad_participantes",
+                                                        mapper.valueToTree(
+                                                                        curso.get("cantidad_participantes")));
+
+                                        datosCurso.set(
+                                                        "estado",
+                                                        mapper.valueToTree(curso.get("estado")));
+
+                                } else {
+
+                                        // Instancia sin curso asociado en PostgreSQL
+                                        datosCurso.put("encontrado", false);
+                                }
+
+                                // Agregar la tarea con los datos del curso
+                                lista.add(tareaCompleta);
+                        }
+
+                        return ResponseEntity.ok(resultado);
+
+                } catch (Exception e) {
+
+                        e.printStackTrace();
+
+                        return ResponseEntity.internalServerError()
+                                        .body(Map.of(
+                                                        "error",
+                                                        "No se pudieron consultar las tareas de Flowable."));
+                }
         }
-    }
 
-    // Guardar la propuesta y completar la tarea en Flowable.
-    @PostMapping("/api/tareas/{tareaId}/completar-propuesta")
-    public ResponseEntity<?> completarPropuesta(
-            @PathVariable("tareaId") String tareaId,
-            @RequestBody Map<String, Object> datos,
-            HttpSession sesion) {
+        // ==========================================
+        // CONSULTAR CURSO POR INSTANCIA DE FLOWABLE
+        // ==========================================
 
-        String usuario =
-                (String) sesion.getAttribute("usuarioFlowable");
+        @GetMapping("/api/cursos/instancia/{processInstanceId}")
+        public ResponseEntity<?> obtenerCursoPorInstancia(
+                        @PathVariable("processInstanceId") String processInstanceId) {
 
-        if (usuario == null || usuario.isBlank()) {
-            return ResponseEntity.status(401)
-                    .body(Map.of("error", "Debes iniciar sesion."));
+                Map<String, Object> curso = cursoService.buscarCursoPorProcessInstanceId(
+                                processInstanceId);
+
+                if (curso == null) {
+
+                        return ResponseEntity.notFound().build();
+                }
+
+                return ResponseEntity.ok(curso);
         }
 
-        if (!"jefe_admin".equals(usuario)) {
-            return ResponseEntity.status(403)
-                    .body(Map.of(
-                            "error",
-                            "No tienes permiso para completar propuestas."));
+        // ==========================================
+        // COMPLETAR UNA TAREA NORMAL
+        // ==========================================
+
+        @PostMapping("/api/tareas/{tareaId}/completar")
+        public ResponseEntity<?> completarTarea(
+                        @PathVariable("tareaId") String tareaId,
+                        HttpSession sesion) {
+
+                String usuario = (String) sesion.getAttribute("usuarioFlowable");
+
+                if (usuario == null || usuario.isBlank()) {
+
+                        return ResponseEntity.status(401)
+                                        .body(Map.of(
+                                                        "error",
+                                                        "Debes iniciar sesion."));
+                }
+
+                try {
+
+                        JsonNode tarea = flowableService.obtenerTareaPorId(tareaId);
+
+                        if (tarea == null) {
+
+                                return ResponseEntity.status(404)
+                                                .body(Map.of(
+                                                                "error",
+                                                                "La tarea no existe."));
+                        }
+
+                        String responsable = tarea.path("assignee").asText("");
+
+                        // Verificar que la tarea pertenezca al usuario
+                        if (!usuario.equals(responsable)) {
+
+                                return ResponseEntity.status(403)
+                                                .body(Map.of(
+                                                                "error",
+                                                                "No tienes permiso para completar esta tarea."));
+                        }
+
+                        // La propuesta se completa por su endpoint especifico
+                        if ("Registrar y Elaborar propuesta"
+                                        .equals(tarea.path("name").asText(""))) {
+
+                                return ResponseEntity.badRequest()
+                                                .body(Map.of(
+                                                                "error",
+                                                                "La propuesta debe completarse desde su formulario."));
+                        }
+
+                        // Completar la tarea en Flowable
+                        flowableService.completarTarea(tareaId);
+
+                        return ResponseEntity.ok(Map.of(
+                                        "mensaje",
+                                        "Tarea completada correctamente."));
+
+                } catch (Exception e) {
+
+                        e.printStackTrace();
+
+                        return ResponseEntity.internalServerError()
+                                        .body(Map.of(
+                                                        "error",
+                                                        "No se pudo completar la tarea."));
+                }
         }
 
-        try {
-            JsonNode tarea =
-                    flowableService.obtenerTareaPorId(tareaId);
+        // ==========================================
+        // GUARDAR PROPUESTA SIN COMPLETAR LA TAREA
+        // ==========================================
 
-            if (tarea == null) {
-                return ResponseEntity.status(404)
-                        .body(Map.of("error", "La tarea no existe."));
-            }
+        @PostMapping("/api/cursos/instancia/{processInstanceId}/propuesta")
+        public ResponseEntity<?> guardarPropuesta(
+                        @PathVariable("processInstanceId") String processInstanceId,
+                        @RequestBody Map<String, Object> datos,
+                        HttpSession sesion) {
 
-            if (!usuario.equals(
-                    tarea.path("assignee").asText(""))) {
-                return ResponseEntity.status(403)
-                        .body(Map.of(
-                                "error",
-                                "La tarea no esta asignada a tu usuario."));
-            }
+                String usuario = (String) sesion.getAttribute("usuarioFlowable");
 
-            if (!"Registrar y Elaborar propuesta"
-                    .equals(tarea.path("name").asText(""))) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of(
-                                "error",
-                                "La tarea no corresponde a elaborar una propuesta."));
-            }
+                if (usuario == null || usuario.isBlank()) {
 
-            String processInstanceId =
-                    tarea.path("processInstanceId").asText();
+                        return ResponseEntity.status(401)
+                                        .body(Map.of(
+                                                        "error",
+                                                        "Debes iniciar sesion."));
+                }
 
-            if (processInstanceId.isBlank()) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of(
-                                "error",
-                                "La tarea no tiene una instancia de proceso valida."));
-            }
+                // Solo el jefe administrativo puede elaborar propuestas
+                if (!"jefe_admin".equals(usuario)) {
 
-            String programa =
-                    String.valueOf(datos.getOrDefault("programa", "")).trim();
+                        return ResponseEntity.status(403)
+                                        .body(Map.of(
+                                                        "error",
+                                                        "No tienes permiso para elaborar propuestas."));
+                }
 
-            if (programa.isBlank()) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of(
-                                "error",
-                                "El programa es obligatorio."));
-            }
+                try {
 
-            BigDecimal presupuesto = new BigDecimal(
-                    String.valueOf(datos.get("presupuesto")));
+                        String programa = String.valueOf(
+                                        datos.getOrDefault("programa", "")).trim();
 
-            if (presupuesto.signum() < 0) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of(
-                                "error",
-                                "El presupuesto no puede ser negativo."));
-            }
+                        if (programa.isBlank()) {
 
-            // Flowable recibe el presupuesto como variable long.
-            // Por eso, en esta versión debe ser un número entero.
-            presupuesto.longValueExact();
+                                return ResponseEntity.badRequest()
+                                                .body(Map.of(
+                                                                "error",
+                                                                "El programa es obligatorio."));
+                        }
 
-            LocalDate fechaInicio = LocalDate.parse(
-                    String.valueOf(datos.get("fechaInicioPosible")));
+                        BigDecimal presupuesto = new BigDecimal(
+                                        String.valueOf(datos.get("presupuesto")));
 
-            LocalDate fechaFin = LocalDate.parse(
-                    String.valueOf(datos.get("fechaFinPropuesta")));
+                        if (presupuesto.signum() < 0) {
 
-            if (fechaFin.isBefore(fechaInicio)) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of(
-                                "error",
-                                "La fecha de fin no puede ser anterior al inicio."));
-            }
+                                return ResponseEntity.badRequest()
+                                                .body(Map.of(
+                                                                "error",
+                                                                "El presupuesto no puede ser negativo."));
+                        }
 
-            // Guardar los datos en PostgreSQL.
-            cursoService.guardarPropuesta(
-                    processInstanceId,
-                    programa,
-                    presupuesto,
-                    fechaInicio,
-                    fechaFin);
+                        LocalDate fechaInicio = LocalDate.parse(
+                                        String.valueOf(
+                                                        datos.get("fechaInicioPosible")));
 
-            // Completar la tarea enviando las variables a Flowable.
-            flowableService.completarTareaConPropuesta(
-                    tareaId,
-                    programa,
-                    presupuesto,
-                    fechaInicio,
-                    fechaFin);
+                        LocalDate fechaFin = LocalDate.parse(
+                                        String.valueOf(
+                                                        datos.get("fechaFinPropuesta")));
 
-            return ResponseEntity.ok(Map.of(
-                    "mensaje",
-                    "Propuesta guardada y tarea completada correctamente."));
+                        if (fechaFin.isBefore(fechaInicio)) {
 
-        } catch (IllegalArgumentException | NullPointerException e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of(
-                            "error",
-                            "Datos invalidos: " + e.getMessage()));
+                                return ResponseEntity.badRequest()
+                                                .body(Map.of(
+                                                                "error",
+                                                                "La fecha de fin no puede ser anterior al inicio."));
+                        }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+                        // Guardar la propuesta en PostgreSQL
+                        cursoService.guardarPropuesta(
+                                        processInstanceId,
+                                        programa,
+                                        presupuesto,
+                                        fechaInicio,
+                                        fechaFin);
 
-            return ResponseEntity.internalServerError()
-                    .body(Map.of(
-                            "error",
-                            "No se pudo completar la propuesta. Revisar los logs."));
+                        return ResponseEntity.ok(Map.of(
+                                        "mensaje",
+                                        "Propuesta guardada correctamente."));
+
+                } catch (IllegalArgumentException | NullPointerException e) {
+
+                        return ResponseEntity.badRequest()
+                                        .body(Map.of(
+                                                        "error",
+                                                        "Datos invalidos: " + e.getMessage()));
+
+                } catch (Exception e) {
+
+                        e.printStackTrace();
+
+                        return ResponseEntity.internalServerError()
+                                        .body(Map.of(
+                                                        "error",
+                                                        "No se pudo guardar la propuesta."));
+                }
         }
-    }
+
+        // ==========================================
+        // GUARDAR PROPUESTA Y COMPLETAR LA TAREA
+        // ==========================================
+
+        @PostMapping("/api/tareas/{tareaId}/completar-propuesta")
+        public ResponseEntity<?> completarPropuesta(
+                        @PathVariable("tareaId") String tareaId,
+                        @RequestBody Map<String, Object> datos,
+                        HttpSession sesion) {
+
+                String usuario = (String) sesion.getAttribute("usuarioFlowable");
+
+                if (usuario == null || usuario.isBlank()) {
+
+                        return ResponseEntity.status(401)
+                                        .body(Map.of(
+                                                        "error",
+                                                        "Debes iniciar sesion."));
+                }
+
+                // Verificar permisos del jefe administrativo
+                if (!"jefe_admin".equals(usuario)) {
+
+                        return ResponseEntity.status(403)
+                                        .body(Map.of(
+                                                        "error",
+                                                        "No tienes permiso para completar propuestas."));
+                }
+
+                try {
+
+                        // Buscar la tarea en Flowable
+                        JsonNode tarea = flowableService.obtenerTareaPorId(tareaId);
+
+                        if (tarea == null) {
+
+                                return ResponseEntity.status(404)
+                                                .body(Map.of(
+                                                                "error",
+                                                                "La tarea no existe."));
+                        }
+
+                        // Verificar que la tarea este asignada al usuario
+                        if (!usuario.equals(
+                                        tarea.path("assignee").asText(""))) {
+
+                                return ResponseEntity.status(403)
+                                                .body(Map.of(
+                                                                "error",
+                                                                "La tarea no esta asignada a tu usuario."));
+                        }
+
+                        // Verificar que sea una tarea de propuesta
+                        if (!"Registrar y Elaborar propuesta"
+                                        .equals(tarea.path("name").asText(""))) {
+
+                                return ResponseEntity.badRequest()
+                                                .body(Map.of(
+                                                                "error",
+                                                                "La tarea no corresponde a elaborar una propuesta."));
+                        }
+
+                        // Obtener la instancia asociada a la tarea
+                        String processInstanceId = tarea.path("processInstanceId").asText();
+
+                        if (processInstanceId.isBlank()) {
+
+                                return ResponseEntity.badRequest()
+                                                .body(Map.of(
+                                                                "error",
+                                                                "La tarea no tiene una instancia de proceso valida."));
+                        }
+
+                        // Validar el programa
+                        String programa = String.valueOf(
+                                        datos.getOrDefault("programa", "")).trim();
+
+                        if (programa.isBlank()) {
+
+                                return ResponseEntity.badRequest()
+                                                .body(Map.of(
+                                                                "error",
+                                                                "El programa es obligatorio."));
+                        }
+
+                        // Validar el presupuesto
+                        BigDecimal presupuesto = new BigDecimal(
+                                        String.valueOf(datos.get("presupuesto")));
+
+                        if (presupuesto.signum() < 0) {
+
+                                return ResponseEntity.badRequest()
+                                                .body(Map.of(
+                                                                "error",
+                                                                "El presupuesto no puede ser negativo."));
+                        }
+
+                        // Flowable recibe el presupuesto como variable long
+                        presupuesto.longValueExact();
+
+                        // Validar las fechas
+                        LocalDate fechaInicio = LocalDate.parse(
+                                        String.valueOf(
+                                                        datos.get("fechaInicioPosible")));
+
+                        LocalDate fechaFin = LocalDate.parse(
+                                        String.valueOf(
+                                                        datos.get("fechaFinPropuesta")));
+
+                        if (fechaFin.isBefore(fechaInicio)) {
+
+                                return ResponseEntity.badRequest()
+                                                .body(Map.of(
+                                                                "error",
+                                                                "La fecha de fin no puede ser anterior al inicio."));
+                        }
+
+                        // Guardar los datos en PostgreSQL
+                        cursoService.guardarPropuesta(
+                                        processInstanceId,
+                                        programa,
+                                        presupuesto,
+                                        fechaInicio,
+                                        fechaFin);
+
+                        // Completar la tarea enviando las variables a Flowable
+                        flowableService.completarTareaConPropuesta(
+                                        tareaId,
+                                        programa,
+                                        presupuesto,
+                                        fechaInicio,
+                                        fechaFin);
+
+                        return ResponseEntity.ok(Map.of(
+                                        "mensaje",
+                                        "Propuesta guardada y tarea completada correctamente."));
+
+                } catch (IllegalArgumentException | NullPointerException e) {
+
+                        return ResponseEntity.badRequest()
+                                        .body(Map.of(
+                                                        "error",
+                                                        "Datos invalidos: " + e.getMessage()));
+
+                } catch (Exception e) {
+
+                        e.printStackTrace();
+
+                        return ResponseEntity.internalServerError()
+                                        .body(Map.of(
+                                                        "error",
+                                                        "No se pudo completar la propuesta. Revisar los logs."));
+                }
+        }
+
+        // ==========================================
+        // CONSULTAR CURSOS DE LA EMPRESA AUTENTICADA
+        // ==========================================
+
+        @GetMapping("/api/empresas/mis-cursos")
+        public ResponseEntity<?> obtenerMisCursosEmpresa(
+                        HttpSession sesion) {
+
+                Integer empresaId = (Integer) sesion.getAttribute("empresaId");
+
+                // Comprobar que haya una empresa autenticada
+                if (empresaId == null) {
+
+                        return ResponseEntity.status(401)
+                                        .body(Map.of(
+                                                        "error",
+                                                        "Debes iniciar sesión como empresa."));
+                }
+
+                try {
+
+                        return ResponseEntity.ok(
+                                        cursoService.buscarCursosPorEmpresaId(empresaId));
+
+                } catch (Exception e) {
+
+                        e.printStackTrace();
+
+                        return ResponseEntity.internalServerError()
+                                        .body(Map.of(
+                                                        "error",
+                                                        "No se pudieron consultar los cursos de la empresa."));
+                }
+        }
+
+        @GetMapping("/api/empresas/mis-cursos/{id}")
+        public ResponseEntity<?> obtenerDetalleCursoEmpresa(
+                        @PathVariable("id") Integer id,
+                        HttpSession sesion) {
+
+                Integer empresaId = (Integer) sesion.getAttribute("empresaId");
+
+                if (empresaId == null) {
+                        return ResponseEntity.status(401).body(
+                                        Map.of("error", "Debe iniciar sesión como empresa."));
+                }
+
+                Map<String, Object> curso = cursoService.buscarCursoPorId(id);
+
+                if (curso == null || curso.isEmpty()) {
+                        return ResponseEntity.status(404).body(
+                                        Map.of("error", "Curso no encontrado."));
+                }
+
+                Object propietario = curso.get("empresa_id");
+
+                if (!(propietario instanceof Number)
+                                || ((Number) propietario).intValue() != empresaId.intValue()) {
+
+                        return ResponseEntity.status(403).body(
+                                        Map.of("error", "No tiene acceso a este curso."));
+                }
+
+                Map<String, Object> detalle = cursoService.buscarCursoPorProcessInstanceId(
+                                String.valueOf(curso.get("process_instance_id")));
+
+                return ResponseEntity.ok(
+                                detalle != null ? detalle : curso);
+        }
+
+        @GetMapping("/api/empresas/mis-cursos/{id}/actividades")
+        public ResponseEntity<?> obtenerActividadesCursoEmpresa(
+                        @PathVariable("id") Integer id,
+                        HttpSession sesion) {
+
+                Integer empresaId = (Integer) sesion.getAttribute("empresaId");
+
+                if (empresaId == null) {
+                        return ResponseEntity.status(401).body(
+                                        Map.of("error", "Debe iniciar sesión como empresa."));
+                }
+
+                Map<String, Object> curso = cursoService.buscarCursoPorId(id);
+
+                if (curso == null || curso.isEmpty()) {
+                        return ResponseEntity.status(404).body(
+                                        Map.of("error", "Curso no encontrado."));
+                }
+
+                Object propietario = curso.get("empresa_id");
+
+                if (!(propietario instanceof Number)
+                                || ((Number) propietario).intValue() != empresaId.intValue()) {
+
+                        return ResponseEntity.status(403).body(
+                                        Map.of("error", "No tiene acceso a este curso."));
+                }
+
+                try {
+
+                        String processInstanceId = String.valueOf(curso.get("process_instance_id"));
+
+                        return ResponseEntity.ok(
+                                        flowableService.obtenerAvanceCurso(processInstanceId));
+
+                } catch (Exception e) {
+
+                        e.printStackTrace();
+
+                        return ResponseEntity.status(502).body(
+                                        Map.of(
+                                                        "error",
+                                                        "No se pudo consultar el avance en Flowable."));
+                }
+        }
 }

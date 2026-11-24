@@ -1,4 +1,3 @@
-
 package curso.flowable.repository;
 
 import curso.flowable.dto.SolicitudCurso;
@@ -8,6 +7,7 @@ import java.util.List;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -38,7 +38,6 @@ public class CursoRepository {
                 solicitud.descripcion(),
                 solicitud.cantidadParticipantes(),
                 solicitud.fechasPreferidas());
-
     }
 
     // Buscar un curso por su ID en PostgreSQL
@@ -46,7 +45,8 @@ public class CursoRepository {
 
         String sql = "SELECT * FROM cursos WHERE id = ?";
 
-        List<Map<String, Object>> resultados = jdbcTemplate.queryForList(sql, cursoId);
+        List<Map<String, Object>> resultados =
+                jdbcTemplate.queryForList(sql, cursoId);
 
         if (resultados.isEmpty()) {
             return null;
@@ -63,7 +63,9 @@ public class CursoRepository {
                 + "FROM cursos c "
                 + "LEFT JOIN empresas e ON c.empresa_id = e.id "
                 + "WHERE c.process_instance_id = ?";
-        List<Map<String, Object>> resultados = jdbcTemplate.queryForList(sql, processInstanceId);
+
+        List<Map<String, Object>> resultados =
+                jdbcTemplate.queryForList(sql, processInstanceId);
 
         if (resultados.isEmpty()) {
             return null;
@@ -94,5 +96,37 @@ public class CursoRepository {
                 fechaInicioPosible,
                 fechaFinPropuesta,
                 processInstanceId);
+    }
+
+    // Obtener todos los cursos asociados a una empresa
+    public List<Map<String, Object>> buscarCursosPorEmpresaId(
+            Integer empresaId) {
+
+        String sql = "SELECT id, tematica, cantidad_participantes, "
+                + "estado, process_instance_id "
+                + "FROM cursos "
+                + "WHERE empresa_id = ? "
+                + "ORDER BY id DESC";
+
+        return jdbcTemplate.queryForList(sql, empresaId);
+    }
+
+    // Actualizar el estado de un curso asociado a una instancia
+    // de Flowable, verificando su estado anterior
+    public int actualizarEstadoCurso(
+            String processInstanceId,
+            String estadoAnterior,
+            String nuevoEstado) {
+
+        String sql = "UPDATE cursos "
+                + "SET estado = ? "
+                + "WHERE process_instance_id = ? "
+                + "AND estado = ?";
+
+        return jdbcTemplate.update(
+                sql,
+                nuevoEstado,
+                processInstanceId,
+                estadoAnterior);
     }
 }

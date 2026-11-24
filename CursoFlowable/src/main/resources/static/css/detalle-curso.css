@@ -268,3 +268,131 @@
 .mensaje-finalizado h2 {
     color: #166534;
 }
+
+/* ===================================
+   DETALLE DINÁMICO DEL CURSO
+=================================== */
+
+[hidden] {
+    display: none !important;
+}
+
+.identificador-curso {
+    color: #64748B;
+    font-size: 13px;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.dato-completo {
+    grid-column: 1 / -1;
+}
+
+.programa-curso {
+    white-space: pre-wrap;
+    line-height: 1.7;
+}
+
+.cabecera-preparacion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.cabecera-preparacion h2 {
+    margin: 0;
+}
+
+.boton-actualizar {
+    background-color: #1C7293;
+    color: white;
+    border: none;
+    border-radius: 7px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.boton-actualizar:hover {
+    background-color: #155A75;
+}
+
+.boton-actualizar:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.ultima-actualizacion {
+    color: #64748B;
+    font-size: 12px;
+    text-align: right;
+    margin-top: 20px;
+}
+
+#mensaje-actividades {
+    color: #64748B;
+    line-height: 1.6;
+}
+
+.estado-en_evaluacion,
+.estado-en_negociacion {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.estado-en_preparacion {
+    background-color: #DBEAFE;
+    color: #1D4ED8;
+}
+
+.estado-confirmado,
+.estado-confirmado_pendiente_inicio {
+    background-color: #E0E7FF;
+    color: #4338CA;
+}
+
+.estado-en_desarrollo {
+    background-color: #CCFBF1;
+    color: #0F766E;
+}
+
+.estado-en_elaboracion_informe {
+    background-color: #F3E8FF;
+    color: #7E22CE;
+}
+
+.estado-finalizado {
+    background-color: #DCFCE7;
+    color: #166534;
+}
+
+.estado-cancelado,
+.actividad-icono.interrumpida,
+.etiqueta.interrumpida {
+    background-color: #FEE2E2;
+    color: #991B1B;
+}
+
+.mensaje-cancelado,
+#mensaje-error {
+    border-left: 4px solid #DC2626;
+}
+
+@media (max-width: 600px) {
+
+    .datos-curso {
+        grid-template-columns: 1fr;
+    }
+
+    .informacion-curso,
+    .preparacion {
+        padding: 20px;
+    }
+
+    .cabecera-preparacion {
+        align-items: flex-start;
+    }
+}

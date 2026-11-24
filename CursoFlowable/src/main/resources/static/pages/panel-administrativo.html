@@ -1,17 +1,23 @@
+
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Panel administrativo - Institución de Capacitación</title>
-    <link rel="stylesheet" href="../css/estilos.css">
-    <link rel="stylesheet" href="../css/panel-administrativo.css">
+
+    <link rel="stylesheet" href="/css/estilos.css">
+    <link rel="stylesheet" href="/css/panel-administrativo.css">
 </head>
 
 <body>
+
     <div class="panel-layout">
+
         <aside class="menu-lateral">
+
             <a href="/index.html" class="marca-panel">
                 <span>🎓</span>
                 <span>Institución de Capacitación</span>
@@ -23,257 +29,828 @@
             </div>
 
             <nav class="navegacion-lateral">
-                <a href="#tareas" class="opcion-menu activa">Mis tareas</a>
+                <a href="#tareas" class="opcion-menu activa">
+                    Mis tareas
+                </a>
             </nav>
 
-            <a href="/index.html" class="cerrar-sesion">Volver al inicio</a>
         </aside>
 
         <main class="contenido-panel">
+
             <header class="cabecera-panel">
+
                 <div>
                     <h1>Panel administrativo</h1>
                     <p>Consulta y gestión de tareas del proceso de capacitación.</p>
                 </div>
-                <span class="etiqueta-usuario">Administración</span>
+
+                <div class="acciones-cabecera">
+
+                    <span class="etiqueta-usuario">
+                        Administración
+                    </span>
+
+                    <button type="button"
+                            class="boton-cerrar-sesion"
+                            onclick="cerrarSesion(event)">
+                        Cerrar sesión
+                    </button>
+
+                </div>
+
             </header>
 
+            <!-- Resumen de tareas -->
+
+            <section class="resumen-panel">
+
+                <div class="tarjeta-resumen">
+                    <p>Total de tareas</p>
+                    <h2 id="total-tareas">—</h2>
+                </div>
+
+                <div class="tarjeta-resumen">
+                    <p>Tareas asignadas</p>
+                    <h2 id="total-asignadas">—</h2>
+                </div>
+
+                <div class="tarjeta-resumen">
+                    <p>Tareas disponibles</p>
+                    <h2 id="total-disponibles">—</h2>
+                </div>
+
+            </section>
+
+            <!-- Sección principal de tareas -->
+
             <section class="seccion-panel" id="tareas">
+
                 <div class="encabezado-seccion">
                     <h2>Mis tareas</h2>
                     <p>Tareas asignadas y disponibles para reclamar.</p>
                 </div>
 
+                <!-- Buscador y filtros -->
+
+                <div class="filtros-tareas">
+
+                    <div class="campo-filtro campo-busqueda">
+
+                        <label for="buscar-tarea">Buscar</label>
+
+                        <input type="search"
+                               id="buscar-tarea"
+                               placeholder="Buscar curso, empresa, tarea o ID...">
+
+                    </div>
+
+                    <div class="campo-filtro">
+
+                        <label for="filtro-estado">Asignación</label>
+
+                        <select id="filtro-estado">
+                            <option value="todas">Todas</option>
+                            <option value="asignada">Asignadas</option>
+                            <option value="disponible">Disponibles</option>
+                        </select>
+
+                    </div>
+
+                    <div class="campo-filtro">
+
+                        <label for="filtro-tipo">Tipo de tarea</label>
+
+                        <select id="filtro-tipo">
+                            <option value="">Todas las tareas</option>
+                        </select>
+
+                    </div>
+
+                    <div class="campo-filtro">
+
+                        <label for="filtro-proceso">Proceso</label>
+
+                        <select id="filtro-proceso">
+                            <option value="todos">Todos</option>
+                            <option value="actual">Modelo actual</option>
+                            <option value="anterior">Modelos anteriores</option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <p id="cantidad-resultados" class="cantidad-resultados">
+                    Cargando tareas...
+                </p>
+
+                <!-- Tabla de tareas -->
+
                 <div class="tabla-contenedor">
+
                     <table class="tabla-tareas">
+
                         <thead>
                             <tr>
-                                <th>Tarea</th>
+                                <th>Tarea y curso</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
 
                         <tbody id="lista-tareas">
+
                             <tr>
                                 <td colspan="3">Cargando tareas...</td>
                             </tr>
+
                         </tbody>
+
                     </table>
+
                 </div>
+
             </section>
+
         </main>
+
     </div>
 
     <script>
-        async function cargarTareas() {
-            const tabla = document.getElementById("lista-tareas");
+
+        // Datos obtenidos desde el backend
+
+        let todasLasTareas = [];
+        let usuarioActual = "";
+
+
+        // ==========================================
+        // CERRAR SESIÓN
+        // ==========================================
+
+        async function cerrarSesion(event) {
+
+            event.preventDefault();
 
             try {
-                const respuesta = await fetch("/api/tareas/mis-tareas", { credentials: "same-origin" });
 
-                if (respuesta.status === 401) {
-                    window.location.href = "/pages/login.html";
-                    return;
-                }
-                if (!respuesta.ok) {
-                    throw new Error("No se pudieron obtener las tareas");
-                }
-
-                const resultado = await respuesta.json();
-                document.querySelector(".usuario-nombre").textContent = resultado.usuario;
-                const tareas = resultado.data || [];
-                console.log("Tareas recibidas de Flowable:", tareas);
-
-                tabla.innerHTML = "";
-
-                if (tareas.length === 0) {
-                    const fila = document.createElement("tr");
-                    const celda = document.createElement("td");
-
-                    celda.colSpan = 3;
-                    celda.textContent = "No hay tareas pendientes.";
-
-                    fila.appendChild(celda);
-                    tabla.appendChild(fila);
-                    return;
-                }
-
-                tareas.forEach(tarea => {
-                    const fila = document.createElement("tr");
-
-                    const nombre = document.createElement("td");
-                    nombre.textContent = tarea.name || "Sin nombre";
-                    nombre.classList.add("nombre-tarea");
-
-                    const estado = document.createElement("td");
-
-                    const etiqueta = document.createElement("span");
-                    etiqueta.classList.add("estado-tarea");
-
-                    if (tarea.assignee === resultado.usuario) {
-                        etiqueta.textContent = "Asignada";
-                        etiqueta.classList.add("asignada");
-                    } else {
-                        etiqueta.textContent = "Disponible";
-                        etiqueta.classList.add("disponible");
-                    }
-
-                    estado.appendChild(etiqueta);
-
-                    const acciones = document.createElement("td");
-
-                    const boton = document.createElement("button");
-                    boton.type = "button";
-                    boton.textContent = "Ver tarea";
-
-
-
-                    boton.classList.add("boton-tarea");
-
-                    boton.addEventListener("click", async () => {
-                        if (tarea.name === "Registrar y Elaborar propuesta") {
-                            const parametros = new URLSearchParams({
-                                tareaId: tarea.id,
-                                processInstanceId: tarea.processInstanceId
-                            });
-
-                            window.location.href =
-                                `/pages/registrar-propuesta.html?${parametros.toString()}`;
-
-                            return;
-                        }
-
-                        // Abrir el formulario específico de elaboración de propuesta
-                        if (tarea.name === "Registrar y Elaborar propuesta") {
-
-                            window.location.href =
-                                `/pages/registrar-propuesta.html?tareaId=${encodeURIComponent(tarea.id)}`;
-
-                            return;
-                        }
-
-                        // Para las demás tareas mantenemos la consulta actual
-                        try {
-                            const processInstanceId = tarea.processInstanceId;
-
-                            const respuesta = await fetch(
-                                `/api/cursos/instancia/${encodeURIComponent(processInstanceId)}`,
-                                { credentials: "same-origin" }
-                            );
-
-                            if (respuesta.status === 401) {
-                                window.location.href = "/pages/login.html";
-                                return;
-                            }
-
-                            if (!respuesta.ok) {
-                                throw new Error("No se pudo obtener el curso");
-                            }
-
-                            const curso = await respuesta.json();
-
-                            console.log("Curso asociado a la tarea:", curso);
-
-                            alert(
-                                "Tarea: " + tarea.name +
-                                "\nCurso: " + curso.tematica +
-                                "\nParticipantes: " + curso.cantidad_participantes +
-                                "\nEstado: " + curso.estado
-                            );
-
-                        } catch (error) {
-                            console.error("Error al obtener el curso:", error);
-                            alert("No se pudieron cargar los datos del curso.");
-                        }
-                    });
-
-
-                    acciones.appendChild(boton);
-
-
-                    if (
-                        tarea.assignee === resultado.usuario &&
-                        tarea.name !== "Registrar y Elaborar propuesta"
-                    ) {
-                        const botonCompletar = document.createElement("button");
-                        botonCompletar.type = "button";
-                        botonCompletar.textContent = "Completar tarea";
-                        botonCompletar.classList.add("boton-tarea");
-
-                        botonCompletar.addEventListener("click", async () => {
-
-                            const confirmar = confirm(
-                                "¿Seguro que querés completar la tarea: " + tarea.name + "?"
-                            );
-
-                            if (!confirmar) return;
-
-                            botonCompletar.disabled = true;
-
-                            try {
-                                const respuesta = await fetch(
-                                    `/api/tareas/${encodeURIComponent(tarea.id)}/completar`,
-                                    {
-                                        method: "POST",
-                                        credentials: "same-origin"
-                                    }
-                                );
-
-                                if (respuesta.status === 401) {
-                                    window.location.href = "/pages/login.html";
-                                    return;
-                                }
-
-                                const resultadoOperacion = await respuesta.json();
-
-                                if (!respuesta.ok) {
-                                    throw new Error(
-                                        resultadoOperacion.error || "No se pudo completar la tarea"
-                                    );
-                                }
-
-                                alert("¡Tarea completada correctamente!");
-
-                                await cargarTareas();
-
-                            } catch (error) {
-                                console.error("Error al completar tarea:", error);
-                                alert(error.message);
-                            } finally {
-                                botonCompletar.disabled = false;
-                            }
-                        });
-
-                        acciones.appendChild(botonCompletar);
-                    }
-
-
-                    fila.appendChild(nombre);
-                    fila.appendChild(estado);
-                    fila.appendChild(acciones);
-
-                    tabla.appendChild(fila);
+                const respuesta = await fetch("/api/auth/logout", {
+                    method: "POST",
+                    credentials: "same-origin"
                 });
 
+                if (respuesta.ok) {
+
+                    window.location.replace("/pages/login.html");
+
+                } else {
+
+                    alert("No se pudo cerrar la sesión.");
+
+                }
+
             } catch (error) {
-                console.error("Error al cargar tareas:", error);
 
-                tabla.innerHTML = "";
+                console.error("Error al cerrar sesión:", error);
+                alert("Error de conexión con el servidor.");
 
-                const fila = document.createElement("tr");
-                const celda = document.createElement("td");
-
-                celda.colSpan = 3;
-                celda.textContent = "Error al cargar las tareas de Flowable.";
-
-                fila.appendChild(celda);
-                tabla.appendChild(fila);
             }
         }
 
-        document.addEventListener("DOMContentLoaded", cargarTareas);
+
+        // ==========================================
+        // CARGAR TAREAS DESDE EL BACKEND
+        // ==========================================
+
+        async function cargarTareas() {
+
+            try {
+
+                const respuesta = await fetch("/api/tareas/mis-tareas", {
+                    credentials: "same-origin",
+                    cache: "no-store"
+                });
+
+                if (respuesta.status === 401) {
+
+                    window.location.replace("/pages/login.html");
+                    return;
+
+                }
+
+                if (!respuesta.ok) {
+
+                    throw new Error("No se pudieron obtener las tareas.");
+
+                }
+
+                const resultado = await respuesta.json();
+
+                usuarioActual = resultado.usuario;
+
+                document.querySelector(".usuario-nombre").textContent =
+                    usuarioActual;
+
+                todasLasTareas = resultado.data || [];
+
+                // Ordenar desde la tarea más reciente
+
+                todasLasTareas.sort((a, b) => {
+
+                    const fechaA = Date.parse(a.createTime) || 0;
+                    const fechaB = Date.parse(b.createTime) || 0;
+
+                    return fechaB - fechaA;
+
+                });
+
+                actualizarResumen();
+
+                cargarTiposDeTarea();
+
+                aplicarFiltros();
+
+            } catch (error) {
+
+                console.error("Error al cargar tareas:", error);
+
+                todasLasTareas = [];
+
+                document.getElementById("total-tareas").textContent = "—";
+                document.getElementById("total-asignadas").textContent = "—";
+                document.getElementById("total-disponibles").textContent = "—";
+
+                mostrarMensajeTabla("Error al cargar las tareas de Flowable.");
+
+                document.getElementById("cantidad-resultados").textContent =
+                    "No se pudieron obtener las tareas.";
+
+            }
+        }
+
+
+        // ==========================================
+        // ACTUALIZAR CONTADORES
+        // ==========================================
+
+        function actualizarResumen() {
+
+            const asignadas = todasLasTareas.filter(
+                tarea => tarea.assignee === usuarioActual
+            ).length;
+
+            const disponibles = todasLasTareas.filter(
+                tarea => !tarea.assignee
+            ).length;
+
+            document.getElementById("total-tareas").textContent =
+                todasLasTareas.length;
+
+            document.getElementById("total-asignadas").textContent =
+                asignadas;
+
+            document.getElementById("total-disponibles").textContent =
+                disponibles;
+
+        }
+
+
+        // ==========================================
+        // CARGAR TIPOS DE TAREA
+        // ==========================================
+
+        function cargarTiposDeTarea() {
+
+            const selector = document.getElementById("filtro-tipo");
+
+            const valorAnterior = selector.value;
+
+            selector.innerHTML = "";
+
+            const opcionTodas = document.createElement("option");
+
+            opcionTodas.value = "";
+            opcionTodas.textContent = "Todas las tareas";
+
+            selector.appendChild(opcionTodas);
+
+            const tipos = [...new Set(
+                todasLasTareas.map(tarea => tarea.name).filter(Boolean)
+            )].sort((a, b) => a.localeCompare(b, "es"));
+
+            tipos.forEach(tipo => {
+
+                const opcion = document.createElement("option");
+
+                opcion.value = tipo;
+                opcion.textContent = tipo;
+
+                selector.appendChild(opcion);
+
+            });
+
+            if (tipos.includes(valorAnterior)) {
+
+                selector.value = valorAnterior;
+
+            }
+        }
+
+
+        // ==========================================
+        // NORMALIZAR TEXTO PARA EL BUSCADOR
+        // ==========================================
+
+        function normalizarTexto(texto) {
+
+            return String(texto ?? "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .trim();
+
+        }
+
+
+        // ==========================================
+        // IDENTIFICAR EL MODELO ACTUAL
+        // ==========================================
+
+        function esProcesoActual(tarea) {
+
+            const definicion = tarea.processDefinitionId || "";
+
+            return definicion.startsWith("process-proyecto-curso:");
+
+        }
+
+
+        // ==========================================
+        // APLICAR BUSCADOR Y FILTROS
+        // ==========================================
+
+        function aplicarFiltros() {
+
+            const busqueda = normalizarTexto(
+                document.getElementById("buscar-tarea").value
+            );
+
+            const estado = document.getElementById("filtro-estado").value;
+
+            const tipo = document.getElementById("filtro-tipo").value;
+
+            const proceso = document.getElementById("filtro-proceso").value;
+
+            const tareasFiltradas = todasLasTareas.filter(tarea => {
+
+                const curso = tarea.curso || {};
+
+                const texto = normalizarTexto([
+
+                    tarea.name,
+                    curso.tematica,
+                    curso.empresa,
+                    curso.id,
+                    curso.id != null ? "Curso #" + curso.id : "",
+                    tarea.processInstanceId
+
+                ].join(" "));
+
+                const coincideBusqueda =
+                    texto.includes(busqueda);
+
+                const coincideEstado =
+                    estado === "todas" ||
+                    (estado === "asignada" &&
+                        tarea.assignee === usuarioActual) ||
+                    (estado === "disponible" &&
+                        !tarea.assignee);
+
+                const coincideTipo =
+                    tipo === "" || tarea.name === tipo;
+
+                const coincideProceso =
+                    proceso === "todos" ||
+                    (proceso === "actual" && esProcesoActual(tarea)) ||
+                    (proceso === "anterior" && !esProcesoActual(tarea));
+
+                return coincideBusqueda &&
+                    coincideEstado &&
+                    coincideTipo &&
+                    coincideProceso;
+
+            });
+
+            document.getElementById("cantidad-resultados").textContent =
+                "Mostrando " + tareasFiltradas.length +
+                " de " + todasLasTareas.length + " tareas";
+
+            mostrarTareas(tareasFiltradas);
+
+        }
+
+
+        // ==========================================
+        // MOSTRAR MENSAJE EN LA TABLA
+        // ==========================================
+
+        function mostrarMensajeTabla(mensaje) {
+
+            const tabla = document.getElementById("lista-tareas");
+
+            tabla.innerHTML = "";
+
+            const fila = document.createElement("tr");
+
+            const celda = document.createElement("td");
+
+            celda.colSpan = 3;
+            celda.textContent = mensaje;
+            celda.classList.add("mensaje-tabla");
+
+            fila.appendChild(celda);
+            tabla.appendChild(fila);
+
+        }
+
+
+        // ==========================================
+        // CREAR ELEMENTOS DE INFORMACIÓN
+        // ==========================================
+
+        function crearTexto(clase, contenido) {
+
+            const elemento = document.createElement("div");
+
+            elemento.className = clase;
+            elemento.textContent = contenido;
+
+            return elemento;
+
+        }
+
+
+        // ==========================================
+        // MOSTRAR TAREAS EN LA TABLA
+        // ==========================================
+
+        function mostrarTareas(tareas) {
+
+            const tabla = document.getElementById("lista-tareas");
+
+            tabla.innerHTML = "";
+
+            if (tareas.length === 0) {
+
+                mostrarMensajeTabla(
+                    todasLasTareas.length === 0
+                        ? "No hay tareas pendientes."
+                        : "No se encontraron tareas con esos filtros."
+                );
+
+                return;
+
+            }
+
+            tareas.forEach(tarea => {
+
+                const fila = document.createElement("tr");
+
+                const curso = tarea.curso || {};
+
+                const asignada = tarea.assignee === usuarioActual;
+
+
+                // ------------------------------------------
+                // COLUMNA: TAREA Y CURSO
+                // ------------------------------------------
+
+                const informacion = document.createElement("td");
+
+                informacion.classList.add("informacion-tarea");
+
+                informacion.appendChild(
+                    crearTexto(
+                        "nombre-tarea",
+                        tarea.name || "Sin nombre"
+                    )
+                );
+
+                if (curso.encontrado) {
+
+                    informacion.appendChild(
+                        crearTexto(
+                            "tematica-curso",
+                            curso.tematica || "Sin temática"
+                        )
+                    );
+
+                    informacion.appendChild(
+                        crearTexto(
+                            "empresa-curso",
+                            curso.empresa || "Empresa no identificada"
+                        )
+                    );
+
+                    informacion.appendChild(
+                        crearTexto(
+                            "datos-curso",
+                            "Curso #" + curso.id +
+                            " · " + (curso.cantidad_participantes ?? "—") +
+                            " participantes"
+                        )
+                    );
+
+                } else {
+
+                    informacion.appendChild(
+                        crearTexto(
+                            "curso-no-encontrado",
+                            "Sin curso asociado en PostgreSQL"
+                        )
+                    );
+
+                    informacion.appendChild(
+                        crearTexto(
+                            "datos-curso",
+                            "Instancia: " +
+                            (tarea.processInstanceId || "No disponible")
+                        )
+                    );
+
+                }
+
+                // Identificar instancias de modelos anteriores
+
+                if (!esProcesoActual(tarea)) {
+
+                    informacion.appendChild(
+                        crearTexto(
+                            "etiqueta-proceso-anterior",
+                            "Modelo anterior"
+                        )
+                    );
+
+                }
+
+
+                // ------------------------------------------
+                // COLUMNA: ESTADO DE ASIGNACIÓN
+                // ------------------------------------------
+
+                const estado = document.createElement("td");
+
+                const etiqueta = document.createElement("span");
+
+                etiqueta.classList.add("estado-tarea");
+
+                if (asignada) {
+
+                    etiqueta.textContent = "Asignada";
+                    etiqueta.classList.add("asignada");
+
+                } else if (!tarea.assignee) {
+
+                    etiqueta.textContent = "Disponible";
+                    etiqueta.classList.add("disponible");
+
+                } else {
+
+                    etiqueta.textContent = "Asignada a otro usuario";
+
+                }
+
+                estado.appendChild(etiqueta);
+
+
+                // ------------------------------------------
+                // COLUMNA: ACCIONES
+                // ------------------------------------------
+
+                const acciones = document.createElement("td");
+
+                const grupoBotones = document.createElement("div");
+
+                grupoBotones.classList.add("acciones-tarea");
+
+                const botonVer = document.createElement("button");
+
+                botonVer.type = "button";
+                botonVer.textContent = "Ver tarea";
+                botonVer.classList.add("boton-tarea");
+
+                botonVer.addEventListener("click", () => {
+
+                    verTarea(tarea);
+
+                });
+
+                grupoBotones.appendChild(botonVer);
+
+
+                // Completar tareas asignadas que no sean propuestas
+
+                if (asignada &&
+                    tarea.name !== "Registrar y Elaborar propuesta") {
+
+                    const botonCompletar = document.createElement("button");
+
+                    botonCompletar.type = "button";
+                    botonCompletar.textContent = "Completar tarea";
+
+                    botonCompletar.classList.add(
+                        "boton-tarea",
+                        "boton-completar"
+                    );
+
+                    botonCompletar.addEventListener("click", () => {
+
+                        completarTarea(tarea, botonCompletar);
+
+                    });
+
+                    grupoBotones.appendChild(botonCompletar);
+
+                }
+
+                acciones.appendChild(grupoBotones);
+
+                fila.appendChild(informacion);
+                fila.appendChild(estado);
+                fila.appendChild(acciones);
+
+                tabla.appendChild(fila);
+
+            });
+
+        }
+
+
+        // ==========================================
+        // VISUALIZAR UNA TAREA
+        // ==========================================
+
+        async function verTarea(tarea) {
+
+            // Abrir formulario específico de propuesta
+
+            if (tarea.name === "Registrar y Elaborar propuesta") {
+
+                const parametros = new URLSearchParams({
+
+                    tareaId: tarea.id,
+                    processInstanceId: tarea.processInstanceId
+
+                });
+
+                window.location.href =
+                    "/pages/registrar-propuesta.html?" +
+                    parametros.toString();
+
+                return;
+
+            }
+
+            // Consultar información del curso asociado
+
+            try {
+
+                const respuesta = await fetch(
+                    `/api/cursos/instancia/${encodeURIComponent(tarea.processInstanceId)}`,
+                    {
+                        credentials: "same-origin"
+                    }
+                );
+
+                if (respuesta.status === 401) {
+
+                    window.location.replace("/pages/login.html");
+                    return;
+
+                }
+
+                if (!respuesta.ok) {
+
+                    throw new Error("No se pudo obtener el curso.");
+
+                }
+
+                const curso = await respuesta.json();
+
+                alert(
+
+                    "Tarea: " + tarea.name +
+                    "\n\nCurso #" + curso.id +
+                    "\nTemática: " + curso.tematica +
+                    "\nEmpresa: " + (curso.empresa || "No disponible") +
+                    "\nParticipantes: " + curso.cantidad_participantes +
+                    "\nEstado del curso: " +
+                    String(curso.estado || "").replace(/_/g, " ")
+
+                );
+
+            } catch (error) {
+
+                console.error("Error al obtener el curso:", error);
+
+                alert("No se pudieron cargar los datos del curso.");
+
+            }
+        }
+
+
+        // ==========================================
+        // COMPLETAR UNA TAREA
+        // ==========================================
+
+        async function completarTarea(tarea, boton) {
+
+            const curso = tarea.curso || {};
+
+            const confirmar = confirm(
+
+                "¿Seguro que querés completar esta tarea?" +
+                "\n\nTarea: " + tarea.name +
+                "\nCurso: " + (curso.tematica || "No identificado") +
+                "\nID del curso: " + (curso.id ?? "No disponible")
+
+            );
+
+            if (!confirmar) return;
+
+            boton.disabled = true;
+
+            try {
+
+                const respuesta = await fetch(
+                    `/api/tareas/${encodeURIComponent(tarea.id)}/completar`,
+                    {
+                        method: "POST",
+                        credentials: "same-origin"
+                    }
+                );
+
+                if (respuesta.status === 401) {
+
+                    window.location.replace("/pages/login.html");
+                    return;
+
+                }
+
+                const resultado = await respuesta.json();
+
+                if (!respuesta.ok) {
+
+                    throw new Error(
+                        resultado.error ||
+                        "No se pudo completar la tarea."
+                    );
+
+                }
+
+                alert("¡Tarea completada correctamente!");
+
+                await cargarTareas();
+
+            } catch (error) {
+
+                console.error("Error al completar tarea:", error);
+
+                alert(error.message);
+
+            } finally {
+
+                boton.disabled = false;
+
+            }
+        }
+
+
+        // ==========================================
+        // INICIALIZAR EL PANEL
+        // ==========================================
+
+        document.addEventListener("DOMContentLoaded", () => {
+
+            document.getElementById("buscar-tarea")
+                .addEventListener("input", aplicarFiltros);
+
+            document.getElementById("filtro-estado")
+                .addEventListener("change", aplicarFiltros);
+
+            document.getElementById("filtro-tipo")
+                .addEventListener("change", aplicarFiltros);
+
+            document.getElementById("filtro-proceso")
+                .addEventListener("change", aplicarFiltros);
+
+            cargarTareas();
+
+        });
+
     </script>
+
 </body>
 
 </html>

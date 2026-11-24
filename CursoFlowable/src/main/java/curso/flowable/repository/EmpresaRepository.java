@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.List;
+import java.util.Map;
 
 @Repository
 public class EmpresaRepository {
@@ -99,5 +101,21 @@ public class EmpresaRepository {
                 usuario,
                 passwordHash,
                 empresaId);
+    }
+
+    // Buscar una empresa por su usuario de acceso
+    public Map<String, Object> buscarPorUsuarioAcceso(String usuario) {
+
+        String sql = "SELECT id, usuario_acceso, password_acceso "
+                + "FROM empresas "
+                + "WHERE usuario_acceso = ?";
+
+        List<Map<String, Object>> resultados = jdbcTemplate.queryForList(sql, usuario);
+
+        if (resultados.isEmpty()) {
+            return null;
+        }
+
+        return resultados.get(0);
     }
 }

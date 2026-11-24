@@ -10,7 +10,7 @@ if (-not (Test-Path (Join-Path $backend 'pom.xml'))) {
 
 # Variables solo para esta sesion de PowerShell y el proceso Java hijo.
 $env:DB_PASSWORD = 'flowable'
-$env:JAVA_TOOL_OPTIONS = '-Duser.timezone=America/Argentina/Buenos_Aires'
+$env:JAVA_TOOL_OPTIONS = '-Duser.timezone=America/Argentina/Buenos_Aires -Dsimular.entrega.credenciales=true'
 
 if (-not (Get-Command mvn -ErrorAction SilentlyContinue)) {
     Write-Error 'No se encontro Maven (mvn) en PATH.'

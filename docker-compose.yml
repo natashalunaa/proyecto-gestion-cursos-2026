@@ -46,6 +46,7 @@ services:
       - SPRING.DATASOURCE.USERNAME=flowable
       - SPRING.DATASOURCE.PASSWORD=flow10
       - DB_PASSWORD=flow10
+      - FLOWABLE_INTEGRATION_SECRET=clave-demo-gestion-cursos-2026
     depends_on:
       postgres:
         condition: service_healthy

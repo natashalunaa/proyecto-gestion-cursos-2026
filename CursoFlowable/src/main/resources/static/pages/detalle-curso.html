@@ -1,9 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Detalle del curso - Institución de Capacitación</title>
 
@@ -13,7 +15,6 @@
 
 <body>
 
-    <!-- ENCABEZADO -->
     <header class="encabezado">
         <div class="contenedor navegacion">
 
@@ -23,267 +24,681 @@
             </a>
 
             <nav class="menu">
+
                 <a href="/pages/panel-empresa.html">
                     Mis cursos
                 </a>
 
-                <a href="/index.html" class="boton-login">
-                    Volver al inicio
+                <a href="/pages/login.html"
+                   class="boton-login"
+                   onclick="cerrarSesion(event)">
+                    Cerrar sesión
                 </a>
+
             </nav>
 
         </div>
     </header>
 
-    <!-- CONTENIDO PRINCIPAL -->
     <main class="contenedor detalle-curso">
 
-        <a href="/pages/panel-empresa.html" class="enlace-volver">
+        <a href="/pages/panel-empresa.html"
+           class="enlace-volver">
             ← Volver a mis cursos
         </a>
 
-        <section class="informacion-curso">
+        <section class="mensaje-estado" id="mensaje-carga">
+            <p>Cargando información del curso...</p>
+        </section>
 
-            <h1 id="nombre-curso">Introducción a Excel</h1>
+        <section class="mensaje-estado"
+                 id="mensaje-error"
+                 hidden>
+            <h2>No se pudo consultar el curso</h2>
+            <p id="texto-error"></p>
+        </section>
 
-            <span class="estado-curso" id="estado-curso">
-                En preparación
-            </span>
+        <section class="informacion-curso"
+                 id="informacion-curso"
+                 hidden>
+
+            <p class="identificador-curso" id="id-curso"></p>
+
+            <h1 id="nombre-curso"></h1>
+
+            <span class="estado-curso" id="estado-curso"></span>
 
             <div class="datos-curso">
 
                 <div>
                     <strong>Empresa</strong>
-                    <p>Empresa de ejemplo S.A.</p>
+                    <p id="empresa-curso"></p>
                 </div>
 
                 <div>
                     <strong>Participantes</strong>
-                    <p id="participantes-curso">15</p>
+                    <p id="participantes-curso"></p>
                 </div>
 
                 <div>
-                    <strong>Fecha prevista</strong>
-                    <p id="fecha-curso">15/12/2026</p>
+                    <strong>Fecha de inicio propuesta</strong>
+                    <p id="fecha-inicio"></p>
+                </div>
+
+                <div>
+                    <strong>Fecha de finalización propuesta</strong>
+                    <p id="fecha-fin"></p>
+                </div>
+
+                <div>
+                    <strong>Presupuesto</strong>
+                    <p id="presupuesto-curso"></p>
                 </div>
 
                 <div>
                     <strong>Estado general</strong>
-                    <p id="estado-general">Preparación del curso</p>
+                    <p id="estado-general"></p>
+                </div>
+
+                <div class="dato-completo">
+                    <strong>Descripción</strong>
+                    <p id="descripcion-curso"></p>
+                </div>
+
+                <div class="dato-completo">
+                    <strong>Programa del curso</strong>
+                    <p id="programa-curso"
+                       class="programa-curso"></p>
                 </div>
 
             </div>
 
         </section>
 
-        <!-- ACTIVIDADES DE PREPARACIÓN -->
-        <section class="preparacion" id="seccion-preparacion">
+        <section class="preparacion"
+                 id="seccion-preparacion"
+                 hidden>
 
-            <h2>Avance de la preparación</h2>
+            <div class="cabecera-preparacion">
 
-            <p class="descripcion">
-                Estas actividades pueden realizarse en paralelo.
-                Cada una muestra su estado de avance.
-            </p>
+                <h2>Avance de la preparación</h2>
 
-            <div class="actividades">
-
-                <article class="actividad">
-
-                    <div class="actividad-icono completada">
-                        ✓
-                    </div>
-
-                    <div class="actividad-contenido">
-                        <h3>Lista de participantes</h3>
-
-                        <p>
-                            Se completó la lista definitiva
-                            de participantes del curso.
-                        </p>
-
-                        <span class="etiqueta completada">
-                            Completada
-                        </span>
-                    </div>
-
-                </article>
-
-                <article class="actividad">
-
-                    <div class="actividad-icono en-proceso">
-                        ◷
-                    </div>
-
-                    <div class="actividad-contenido">
-                        <h3>Preparación de materiales</h3>
-
-                        <p>
-                            Se están preparando los materiales
-                            necesarios para la capacitación.
-                        </p>
-
-                        <span class="etiqueta en-proceso">
-                            En proceso
-                        </span>
-                    </div>
-
-                </article>
-
-                <article class="actividad">
-
-                    <div class="actividad-icono pendiente">
-                        ○
-                    </div>
-
-                    <div class="actividad-contenido">
-                        <h3>Evaluación y reserva de recursos</h3>
-
-                        <p>
-                            Se están evaluando los recursos
-                            necesarios para realizar el curso.
-                        </p>
-
-                        <span class="etiqueta pendiente">
-                            Pendiente
-                        </span>
-                    </div>
-
-                </article>
+                <button type="button"
+                        class="boton-actualizar"
+                        id="boton-actualizar"
+                        onclick="cargarCurso()">
+                    ↻ Actualizar
+                </button>
 
             </div>
 
+            <p class="descripcion">
+                Las actividades de preparación pueden realizarse
+                en paralelo. La información se consulta
+                directamente desde Flowable.
+            </p>
+
+            <p id="mensaje-actividades"></p>
+
+            <div class="actividades"
+                 id="actividades-curso">
+            </div>
+
+            <p class="ultima-actualizacion"
+               id="ultima-actualizacion"></p>
+
         </section>
 
-
-        <section class="mensaje-estado" id="mensaje-negociacion" style="display: none;">
+        <section class="mensaje-estado"
+                 id="mensaje-negociacion"
+                 hidden>
 
             <h2>Propuesta en negociación</h2>
 
             <p>
-                Este curso todavía se encuentra en la etapa
-                de negociación. Las actividades de preparación
-                comenzarán cuando la empresa acepte la propuesta
-                y se confirme el curso.
+                El curso todavía se encuentra en la etapa
+                de evaluación o negociación de la propuesta.
             </p>
 
         </section>
 
-        <!-- MENSAJE PARA CURSOS FINALIZADOS -->
-        <section class="mensaje-estado mensaje-finalizado" id="mensaje-finalizado" style="display: none;">
+        <section class="mensaje-estado"
+                 id="mensaje-confirmado"
+                 hidden>
+
+            <h2>Curso confirmado</h2>
+
+            <p>
+                La preparación del curso ha finalizado.
+                Se encuentra pendiente de inicio.
+            </p>
+
+        </section>
+
+        <section class="mensaje-estado"
+                 id="mensaje-desarrollo"
+                 hidden>
+
+            <h2>Curso en desarrollo</h2>
+
+            <p>
+                La capacitación se encuentra en desarrollo.
+            </p>
+
+        </section>
+
+        <section class="mensaje-estado"
+                 id="mensaje-informe"
+                 hidden>
+
+            <h2>Elaboración del informe</h2>
+
+            <p>
+                La capacitación ha terminado y se está
+                elaborando el informe de resultados.
+            </p>
+
+        </section>
+
+        <section class="mensaje-estado mensaje-finalizado"
+                 id="mensaje-finalizado"
+                 hidden>
 
             <h2>✓ Curso finalizado</h2>
 
-            <p>
-                La capacitación ha finalizado.
-                Podrás consultar el informe final del curso
-                cuando esté disponible.
-            </p>
+            <p>La capacitación ha finalizado.</p>
 
         </section>
 
+        <section class="mensaje-estado mensaje-cancelado"
+                 id="mensaje-cancelado"
+                 hidden>
 
-        <p class="aviso-ejemplo">
-            Los datos mostrados son de ejemplo.
-            Todavía no están conectados con el proceso BPMN.
-        </p>
+            <h2>Curso cancelado</h2>
+
+            <p>La realización del curso ha sido cancelada.</p>
+
+        </section>
 
     </main>
 
-    <!-- PIE DE PÁGINA -->
     <footer>
         <p>Institución de Capacitación - 2026</p>
     </footer>
 
-
     <script>
-        // Obtener el ID del curso desde la URL
-        const parametros = new URLSearchParams(window.location.search);
+
+        const parametros =
+            new URLSearchParams(window.location.search);
+
         const idCurso = parametros.get("id");
 
-        // Datos ficticios para probar el funcionamiento
-        const cursos = {
-            "1": {
-                nombre: "Introducción a Excel",
-                participantes: 15,
-                fecha: "15/12/2026",
-                estado: "En preparación",
-                estadoGeneral: "Preparación del curso"
+        const estados = {
+
+            en_evaluacion: {
+                nombre: "En evaluación",
+                seccion: "mensaje-negociacion"
             },
-            "2": {
-                nombre: "Seguridad e higiene",
-                participantes: 20,
-                fecha: "Por definir",
-                estado: "En negociación",
-                estadoGeneral: "Negociación de propuesta"
+
+            en_negociacion: {
+                nombre: "En negociación",
+                seccion: "mensaje-negociacion"
             },
-            "3": {
-                nombre: "Atención al cliente",
-                participantes: 10,
-                fecha: "10/11/2026",
-                estado: "Finalizado",
-                estadoGeneral: "Curso finalizado"
+
+            en_preparacion: {
+                nombre: "En preparación",
+                seccion: "seccion-preparacion"
+            },
+
+            confirmado_pendiente_inicio: {
+                nombre: "Confirmado y pendiente de inicio",
+                seccion: "mensaje-confirmado"
+            },
+
+            confirmado: {
+                nombre: "Confirmado y pendiente de inicio",
+                seccion: "mensaje-confirmado"
+            },
+
+            en_desarrollo: {
+                nombre: "En desarrollo",
+                seccion: "mensaje-desarrollo"
+            },
+
+            en_elaboracion_informe: {
+                nombre: "En elaboración del informe",
+                seccion: "mensaje-informe"
+            },
+
+            finalizado: {
+                nombre: "Finalizado",
+                seccion: "mensaje-finalizado"
+            },
+
+            cancelado: {
+                nombre: "Cancelado",
+                seccion: "mensaje-cancelado"
             }
         };
 
-        // Buscar el curso seleccionado
-        const curso = cursos[idCurso];
-
-        if (curso) {
-            document.getElementById("nombre-curso").textContent =
-                curso.nombre;
-
-            document.getElementById("participantes-curso").textContent =
-                curso.participantes;
-
-            document.getElementById("fecha-curso").textContent =
-                curso.fecha;
-
-            document.getElementById("estado-curso").textContent =
-                curso.estado;
-
-            document.getElementById("estado-general").textContent =
-                curso.estadoGeneral;
-
-
-            const seccionPreparacion =
-                document.getElementById("seccion-preparacion");
-
-            if (curso.estado === "En preparación") {
-                seccionPreparacion.style.display = "block";
-            } else {
-                seccionPreparacion.style.display = "none";
-            }
-
-
-            const mensajeNegociacion =
-                document.getElementById("mensaje-negociacion");
-
-            if (curso.estado === "En negociación") {
-                mensajeNegociacion.style.display = "block";
-            } else {
-                mensajeNegociacion.style.display = "none";
-            }
-
-
-            const mensajeFinalizado =
-                document.getElementById("mensaje-finalizado");
-
-            if (curso.estado === "Finalizado") {
-                mensajeFinalizado.style.display = "block";
-            } else {
-                mensajeFinalizado.style.display = "none";
-            }
-
-
-
-        } else {
-            document.getElementById("nombre-curso").textContent =
-                "Curso no encontrado";
+        function elemento(id) {
+            return document.getElementById(id);
         }
+
+        function escribir(id, valor) {
+
+            elemento(id).textContent =
+                valor === null ||
+                valor === undefined ||
+                valor === ""
+                    ? "Sin definir"
+                    : valor;
+        }
+
+        function normalizar(texto) {
+
+            return String(texto || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .trim();
+        }
+
+        function formatearFecha(fecha) {
+
+            if (!fecha) {
+                return "Por definir";
+            }
+
+            const coincidencia = String(fecha)
+                .match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+            if (coincidencia) {
+
+                return coincidencia[3] + "/" +
+                       coincidencia[2] + "/" +
+                       coincidencia[1];
+            }
+
+            return String(fecha);
+        }
+
+        function formatearPresupuesto(valor) {
+
+            if (valor === null ||
+                valor === undefined ||
+                valor === "") {
+
+                return "Por definir";
+            }
+
+            const numero = Number(valor);
+
+            if (!Number.isFinite(numero)) {
+                return "Por definir";
+            }
+
+            return new Intl.NumberFormat("es-AR", {
+                style: "currency",
+                currency: "ARS",
+                maximumFractionDigits: 2
+            }).format(numero);
+        }
+
+        async function consultar(url) {
+
+            const respuesta = await fetch(url, {
+                credentials: "same-origin",
+                cache: "no-store"
+            });
+
+            if (respuesta.status === 401) {
+
+                window.location.replace("/pages/login.html");
+
+                throw new Error("Debe iniciar sesión.");
+            }
+
+            if (respuesta.status === 403) {
+
+                throw new Error(
+                    "No tiene autorización para consultar este curso."
+                );
+            }
+
+            if (respuesta.status === 404) {
+
+                throw new Error("El curso no fue encontrado.");
+            }
+
+            if (!respuesta.ok) {
+
+                throw new Error(
+                    "Error al consultar la información. HTTP " +
+                    respuesta.status
+                );
+            }
+
+            return await respuesta.json();
+        }
+
+        function ocultarSecciones() {
+
+            const secciones = [
+                "seccion-preparacion",
+                "mensaje-negociacion",
+                "mensaje-confirmado",
+                "mensaje-desarrollo",
+                "mensaje-informe",
+                "mensaje-finalizado",
+                "mensaje-cancelado"
+            ];
+
+            secciones.forEach(id => {
+                elemento(id).hidden = true;
+            });
+        }
+
+        function mostrarCurso(curso) {
+
+            const estado = estados[curso.estado] || {
+                nombre: String(curso.estado || "Sin definir")
+                    .replaceAll("_", " "),
+                seccion: null
+            };
+
+            escribir("id-curso", "Curso #" + curso.id);
+
+            escribir("nombre-curso", curso.tematica);
+
+            escribir("empresa-curso", curso.empresa);
+
+            escribir(
+                "participantes-curso",
+                curso.cantidad_participantes
+            );
+
+            escribir(
+                "fecha-inicio",
+                formatearFecha(curso.fecha_inicio_posible)
+            );
+
+            escribir(
+                "fecha-fin",
+                formatearFecha(curso.fecha_fin_propuesta)
+            );
+
+            escribir(
+                "presupuesto-curso",
+                formatearPresupuesto(curso.presupuesto)
+            );
+
+            escribir("descripcion-curso", curso.descripcion);
+
+            escribir("programa-curso", curso.programa);
+
+            escribir("estado-curso", estado.nombre);
+
+            escribir("estado-general", estado.nombre);
+
+            elemento("estado-curso").className =
+                "estado-curso estado-" +
+                String(curso.estado || "desconocido");
+
+            ocultarSecciones();
+
+            elemento("informacion-curso").hidden = false;
+
+            if (estado.seccion) {
+                elemento(estado.seccion).hidden = false;
+            }
+        }
+
+        function esActividadPreparacion(actividad) {
+
+            const nombre = normalizar(actividad.nombre);
+
+            const palabras = [
+                "nomina",
+                "participante",
+                "material",
+                "recurso",
+                "reserva",
+                "reservar",
+                "aula",
+                "equipamiento",
+                "plataforma virtual"
+            ];
+
+            return palabras.some(palabra =>
+                nombre.includes(palabra)
+            );
+        }
+
+        function crearActividad(actividad) {
+
+            const configuraciones = {
+
+                completada: {
+                    clase: "completada",
+                    icono: "✓",
+                    etiqueta: "Completada",
+                    descripcion: "La actividad ha finalizado."
+                },
+
+                en_proceso: {
+                    clase: "en-proceso",
+                    icono: "◷",
+                    etiqueta: "En proceso",
+                    descripcion: "La actividad está activa en Flowable."
+                },
+
+                pendiente: {
+                    clase: "pendiente",
+                    icono: "○",
+                    etiqueta: "Pendiente",
+                    descripcion: "La actividad todavía no ha comenzado."
+                },
+
+                interrumpida: {
+                    clase: "interrumpida",
+                    icono: "×",
+                    etiqueta: "Interrumpida",
+                    descripcion: "La actividad fue interrumpida."
+                }
+            };
+
+            const config =
+                configuraciones[actividad.estado] ||
+                configuraciones.pendiente;
+
+            const articulo = document.createElement("article");
+
+            articulo.className = "actividad";
+
+            const icono = document.createElement("div");
+
+            icono.className =
+                "actividad-icono " + config.clase;
+
+            icono.textContent = config.icono;
+
+            const contenido = document.createElement("div");
+
+            contenido.className = "actividad-contenido";
+
+            const titulo = document.createElement("h3");
+
+            titulo.textContent = actividad.nombre;
+
+            const descripcion = document.createElement("p");
+
+            descripcion.textContent = config.descripcion;
+
+            const etiqueta = document.createElement("span");
+
+            etiqueta.className = "etiqueta " + config.clase;
+
+            etiqueta.textContent = config.etiqueta;
+
+            contenido.append(titulo, descripcion, etiqueta);
+
+            articulo.append(icono, contenido);
+
+            return articulo;
+        }
+
+        async function cargarActividades() {
+
+            const contenedor = elemento("actividades-curso");
+
+            contenedor.replaceChildren();
+
+            escribir(
+                "mensaje-actividades",
+                "Consultando actividades en Flowable..."
+            );
+
+            elemento("ultima-actualizacion").textContent = "";
+
+            try {
+
+                const actividades = await consultar(
+                    "/api/empresas/mis-cursos/" +
+                    encodeURIComponent(idCurso) +
+                    "/actividades"
+                );
+
+                const preparacion = actividades.filter(
+                    esActividadPreparacion
+                );
+
+                const prioridades = {
+                    en_proceso: 0,
+                    pendiente: 1,
+                    completada: 2,
+                    interrumpida: 3
+                };
+
+                preparacion.sort((a, b) =>
+                    (prioridades[a.estado] ?? 4) -
+                    (prioridades[b.estado] ?? 4)
+                );
+
+                if (preparacion.length === 0) {
+
+                    escribir(
+                        "mensaje-actividades",
+                        "No se encontraron actividades de preparación registradas."
+                    );
+
+                    return;
+                }
+
+                elemento("mensaje-actividades").textContent = "";
+
+                preparacion.forEach(actividad => {
+
+                    contenedor.appendChild(
+                        crearActividad(actividad)
+                    );
+                });
+
+                escribir(
+                    "ultima-actualizacion",
+                    "Última actualización: " +
+                    new Date().toLocaleString("es-AR")
+                );
+
+            } catch (error) {
+
+                escribir(
+                    "mensaje-actividades",
+                    error.message
+                );
+            }
+        }
+
+        async function cargarCurso() {
+
+            elemento("mensaje-error").hidden = true;
+
+            elemento("boton-actualizar").disabled = true;
+
+            try {
+
+                if (!idCurso || !/^[1-9]\d*$/.test(idCurso)) {
+
+                    throw new Error(
+                        "El identificador del curso no es válido."
+                    );
+                }
+
+                const curso = await consultar(
+                    "/api/empresas/mis-cursos/" +
+                    encodeURIComponent(idCurso)
+                );
+
+                mostrarCurso(curso);
+
+                elemento("mensaje-carga").hidden = true;
+
+                if (curso.estado === "en_preparacion") {
+
+                    await cargarActividades();
+                }
+
+            } catch (error) {
+
+                elemento("informacion-curso").hidden = true;
+
+                ocultarSecciones();
+
+                elemento("mensaje-error").hidden = false;
+
+                escribir("texto-error", error.message);
+
+            } finally {
+
+                elemento("mensaje-carga").hidden = true;
+
+                elemento("boton-actualizar").disabled = false;
+            }
+        }
+
+        async function cerrarSesion(event) {
+
+            event.preventDefault();
+
+            try {
+
+                const respuesta = await fetch(
+                    "/api/auth/logout",
+                    {
+                        method: "POST",
+                        credentials: "same-origin"
+                    }
+                );
+
+                if (!respuesta.ok &&
+                    respuesta.status !== 401) {
+
+                    throw new Error(
+                        "No se pudo cerrar la sesión."
+                    );
+                }
+
+                window.location.replace("/pages/login.html");
+
+            } catch (error) {
+
+                alert(error.message);
+            }
+        }
+
+        cargarCurso();
+
     </script>
-
-
 
 </body>
 

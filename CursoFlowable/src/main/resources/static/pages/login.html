@@ -1,11 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Iniciar sesión - Institución de Capacitación</title>
 
@@ -56,25 +54,15 @@
                 <div class="campo">
                     <label for="usuario">Usuario</label>
 
-                    <input
-                        type="text"
-                        id="usuario"
-                        name="usuario"
-                        placeholder="Ingresá tu usuario"
-                        autocomplete="username"
-                        required>
+                    <input type="text" id="usuario" name="usuario" placeholder="Ingresá tu usuario"
+                        autocomplete="username" required>
                 </div>
 
                 <div class="campo">
                     <label for="contrasena">Contraseña</label>
 
-                    <input
-                        type="password"
-                        id="contrasena"
-                        name="contrasena"
-                        placeholder="Ingresá tu contraseña"
-                        autocomplete="current-password"
-                        required>
+                    <input type="password" id="contrasena" name="contrasena" placeholder="Ingresá tu contraseña"
+                        autocomplete="current-password" required>
                 </div>
 
                 <button type="submit" class="boton-ingresar">
@@ -99,7 +87,7 @@
         <p>Institución de Capacitación - 2026</p>
     </footer>
 
-        <script>
+    <script>
         document.getElementById("form-login").addEventListener("submit", async function (evento) {
             evento.preventDefault();
             const boton = this.querySelector('button[type="submit"]');
@@ -115,8 +103,17 @@
                     })
                 });
                 const datos = await respuesta.json();
-                if (!respuesta.ok) throw new Error(datos.error || "No se pudo iniciar sesión.");
-                window.location.href = "/pages/panel-administrativo.html";
+
+                if (!respuesta.ok) {
+                    throw new Error(datos.error || "No se pudo iniciar sesión.");
+                }
+
+                // Redirigir según el tipo de usuario
+                if (datos.tipoUsuario === "empresa") {
+                    window.location.href = "/pages/panel-empresa.html";
+                } else {
+                    window.location.href = "/pages/panel-administrativo.html";
+                }
             } catch (error) {
                 alert(error.message);
             } finally {
@@ -126,4 +123,5 @@
     </script>
 
 </body>
+
 </html>
