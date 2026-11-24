@@ -3,10 +3,10 @@ package historico;
 
 
 import java.util.HashMap;
-import java.util.HashSet;
+import org.flowable.variable.api.history.HistoricVariableInstance;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
 import java.util.TreeMap;
 
 import org.flowable.engine.HistoryService;
@@ -41,36 +41,38 @@ public class ConsultasHistoricas {
 
         for (HistoricProcessInstance instancia : instancias) {
 
-            List<HistoricActivityInstance> actividades =
-                    historyService.createHistoricActivityInstanceQuery()
+            HistoricVariableInstance variable =
+                    historyService.createHistoricVariableInstanceQuery()
                             .processInstanceId(instancia.getId())
-                            .finished()
-                            .list();
+                            .variableName("resultadoProceso")
+                            .singleResult();
 
-            Set<String> ids = new HashSet<>();
-
-            for (HistoricActivityInstance actividad : actividades) {
-                ids.add(actividad.getActivityId());
+            if (variable == null || variable.getValue() == null
+                    || instancia.getDeleteReason() != null) {
+                sinClasificar++;
+                continue;
             }
 
-            // Priorizar el resultado definitivo de la instancia.
-            if (ids.contains("Activity_12e0et1")) {
-                canceladas++;
+            String resultado = variable.getValue().toString();
 
-            } else if (ids.contains("EnviarInforme")) {
-                realizadas++;
-
-            } else if (ids.contains("Activity_0iibzwu")) {
-                noViables++;
-
-            } else if (ids.contains("Rechazar")) {
-                rechazadas++;
-
-            } else if (ids.contains("SinRespuesta")) {
-                sinRespuesta++;
-
-            } else {
-                sinClasificar++;
+            switch (resultado) {
+                case "no_viable":
+                    noViables++;
+                    break;
+                case "rechazado":
+                    rechazadas++;
+                    break;
+                case "sin_respuesta":
+                    sinRespuesta++;
+                    break;
+                case "cancelado":
+                    canceladas++;
+                    break;
+                case "finalizado":
+                    realizadas++;
+                    break;
+                default:
+                    sinClasificar++;
             }
         }
 
@@ -99,6 +101,10 @@ public class ConsultasHistoricas {
         Map<String, Integer> tareasPorEmpleado = new TreeMap<>();
 
         for (HistoricTaskInstance tarea : tareas) {
+
+            if (tarea.getDeleteReason() != null) {
+                continue;
+            }
 
             String empleado = tarea.getAssignee();
 

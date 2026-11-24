@@ -1,0 +1,5 @@
+graphviz==0.21
+pandas==3.1.1
+pm4py==2.7.23.14
+psycopg2-binary==2.9.13
+requests==2.34.2

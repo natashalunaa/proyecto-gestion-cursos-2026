@@ -1,8 +1,10 @@
 import csv
+from pathlib import Path
 from datetime import datetime
 from getpass import getpass
 
 import requests
+import psycopg2
 
 
 # Configuración
@@ -30,20 +32,7 @@ ACTIVIDADES = {
     "FinSinCurso",
 }
 
-ARCHIVO_SALIDA = "eventos.csv"
-
-# ID del elemento <process id="..."> del BPMN.
-PROCESS_KEY = "processxor"
-
-# Opcional: copiar aqui­ los IDs BPMN de las actividades y eventos
-# de negociacion que se quieran analizar.
-# VacÃ­o = exportar todos los elementos historicos finalizados.
-ACTIVIDADES = set()
-# Ejemplo ilustrativo:
-# ACTIVIDADES = {"enviarPropuesta", "revisarPropuesta", "recordatorio"}
-
-ARCHIVO_SALIDA = "eventos.csv"
-
+ARCHIVO_SALIDA = Path(__file__).resolve().parent / "eventos.csv"
 
 def consultar_todos(session, recurso, filtros):
     """Recupera todas las pagginas de una consulta REST."""
@@ -77,10 +66,38 @@ def fecha_iso(valor):
     return datetime.fromisoformat(valor.replace("Z", "+00:00"))
 
 
+def obtener_actividades_descartadas():
+    clave_db = getpass("Contrasenia de PostgreSQL: ")
+
+    conexion = psycopg2.connect(
+        host="127.0.0.1",
+        port=5433,
+        dbname="flowable",
+        user="flowable",
+        password=clave_db,
+    )
+
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT id_
+                FROM act_hi_actinst
+                WHERE proc_def_id_ LIKE %s
+                  AND delete_reason_ IS NOT NULL
+                """,
+                (PROCESS_KEY + ":%",),
+            )
+            return {fila[0] for fila in cursor.fetchall()}
+    finally:
+        conexion.close()
+
+
 def main():
     usuario = input("Usuario de Flowable: ")
     clave = getpass("Contrasenia: ")
 
+    descartadas = obtener_actividades_descartadas()
     eventos = []
 
     with requests.Session() as session:
@@ -107,6 +124,9 @@ def main():
             )
 
             for actividad in actividades:
+                if actividad["id"] in descartadas:
+                    continue
+
                 # No exportar elementos sin fecha de finalizacion.
                 if not actividad.get("endTime"):
                     continue
