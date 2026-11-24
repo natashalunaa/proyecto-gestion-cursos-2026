@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+    xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+    xmlns:flowable="http://flowable.org/bpmn"
+    targetNamespace="http://gestioncursos/pruebas">
+
+    <process id="PruebaViabilidad"
+             name="Prueba de viabilidad"
+             isExecutable="true">
+
+        <startEvent id="inicio" />
+
+        <sequenceFlow id="f1"
+            sourceRef="inicio"
+            targetRef="calcular" />
+
+        <serviceTask id="calcular"
+            name="Calcular cursos activos"
+            flowable:class="curso.flowable.CalcularCursosActivos" />
+
+        <sequenceFlow id="f2"
+            sourceRef="calcular"
+            targetRef="evaluar" />
+
+       <serviceTask id="evaluar"
+            name="Evaluar viabilidad"
+            flowable:type="dmn">
+            <extensionElements>
+                <flowable:field name="decisionTableReferenceKey">
+                    <flowable:string>evaluarViabilidad</flowable:string>
+                </flowable:field>
+            </extensionElements>
+        </serviceTask>
+
+        <sequenceFlow id="f3"
+            sourceRef="evaluar"
+            targetRef="verificar" />
+
+        <userTask id="verificar"
+            name="Verificar resultado de viabilidad"
+            flowable:assignee="admin" />
+
+        <sequenceFlow id="f4"
+            sourceRef="verificar"
+            targetRef="fin" />
+
+        <endEvent id="fin" />
+
+    </process>
+</definitions>
