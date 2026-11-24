@@ -48,7 +48,7 @@ public class FlowableService {
         public String iniciarProceso(SolicitudCurso solicitud) throws Exception {
 
                 Map<String, Object> datos = Map.of(
-                                "processDefinitionKey", "process-proyecto-curso",
+                                "processDefinitionKey", "Process_Curso",
                                 "variables", List.of(
                                                 Map.of(
                                                                 "name", "tematica",
@@ -96,6 +96,59 @@ public class FlowableService {
                 }
 
                 return processInstanceId;
+        }
+
+        public void confirmarRegistro(String processInstanceId) throws Exception {
+
+                String mensaje = "Msg_registro_confirmado";
+
+                String url = flowableUrl
+                                + "/runtime/executions?processInstanceId="
+                                + URLEncoder.encode(processInstanceId, StandardCharsets.UTF_8)
+                                + "&messageEventSubscriptionName=" + mensaje;
+
+                HttpRequest consulta = HttpRequest.newBuilder()
+                                .uri(URI.create(url))
+                                .header("Authorization", autenticacion())
+                                .GET()
+                                .build();
+
+                HttpResponse<String> respuesta = cliente.send(
+                                consulta, HttpResponse.BodyHandlers.ofString());
+
+                if (respuesta.statusCode() != 200) {
+                        throw new IllegalStateException(
+                                        "Error al buscar la ejecucion: " + respuesta.body());
+                }
+
+                JsonNode ejecuciones = objectMapper.readTree(respuesta.body()).path("data");
+
+                if (ejecuciones.size() != 1) {
+                        throw new IllegalStateException(
+                                        "No se encontro una unica ejecucion esperando el registro");
+                }
+
+                String executionId = ejecuciones.get(0).path("id").asText();
+
+                Map<String, Object> datos = Map.of(
+                                "action", "messageEventReceived",
+                                "messageName", mensaje);
+
+                HttpRequest confirmacion = HttpRequest.newBuilder()
+                                .uri(URI.create(flowableUrl + "/runtime/executions/" + executionId))
+                                .header("Authorization", autenticacion())
+                                .header("Content-Type", "application/json")
+                                .PUT(HttpRequest.BodyPublishers.ofString(
+                                                objectMapper.writeValueAsString(datos)))
+                                .build();
+
+                HttpResponse<String> resultado = cliente.send(
+                                confirmacion, HttpResponse.BodyHandlers.ofString());
+
+                if (resultado.statusCode() < 200 || resultado.statusCode() >= 300) {
+                        throw new IllegalStateException(
+                                        "Error al confirmar el registro: " + resultado.body());
+                }
         }
 
         public JsonNode obtenerTareasUsuario(String usuario) throws Exception {
