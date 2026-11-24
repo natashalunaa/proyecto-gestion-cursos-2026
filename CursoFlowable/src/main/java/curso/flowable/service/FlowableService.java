@@ -231,6 +231,40 @@ public class FlowableService {
                 enviarCompletarTarea(tareaId, datos);
         }
 
+        // Completar la tarea Evaluar Recursos
+        public void completarTareaConRecursos(
+                        String tareaId,
+                        boolean requiereAula,
+                        boolean requierePlataforma,
+                        boolean requiereEquipamiento) throws Exception {
+
+                if (!requiereAula &&
+                                !requierePlataforma &&
+                                !requiereEquipamiento) {
+
+                        throw new IllegalArgumentException(
+                                        "Debe seleccionar al menos un recurso.");
+                }
+
+                Map<String, Object> datos = Map.of(
+                                "action", "complete",
+                                "variables", List.of(
+                                                Map.of(
+                                                                "name", "requiereAula",
+                                                                "value", requiereAula,
+                                                                "type", "boolean"),
+                                                Map.of(
+                                                                "name", "requierePlataforma",
+                                                                "value", requierePlataforma,
+                                                                "type", "boolean"),
+                                                Map.of(
+                                                                "name", "requiereEquipamiento",
+                                                                "value", requiereEquipamiento,
+                                                                "type", "boolean")));
+
+                enviarCompletarTarea(tareaId, datos);
+        }
+
         // Reclamar una tarea para el usuario que inició sesión.
         public void reclamarTarea(String tareaId, String usuario) throws Exception {
 

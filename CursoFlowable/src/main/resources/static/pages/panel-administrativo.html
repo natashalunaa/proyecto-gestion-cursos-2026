@@ -171,6 +171,47 @@
         </main>
 
     </div>
+    <dialog id="modal-recursos" class="modal-recursos">
+
+        <h2>Evaluar recursos</h2>
+
+        <p id="curso-recursos"></p>
+
+        <p>Seleccioná los recursos necesarios para el curso.</p>
+
+        <form id="form-recursos">
+
+            <label class="opcion-recurso">
+                <input type="checkbox" id="requiereAula">
+                Aula física
+            </label>
+
+            <label class="opcion-recurso">
+                <input type="checkbox" id="requierePlataforma">
+                Aula virtual
+            </label>
+
+            <label class="opcion-recurso">
+                <input type="checkbox" id="requiereEquipamiento">
+                Equipamiento especial
+            </label>
+
+            <div class="acciones-modal">
+
+                <button type="button" class="boton-cancelar"
+                    onclick="document.getElementById('modal-recursos').close()">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="boton-tarea">
+                    Confirmar recursos
+                </button>
+
+            </div>
+
+        </form>
+
+    </dialog>
 
     <script>
 
@@ -523,13 +564,16 @@
                 const informacion = document.createElement("td");
 
                 informacion.classList.add("informacion-tarea");
+                const estiloTarea = obtenerEstiloTarea(tarea.name);
 
-                informacion.appendChild(
-                    crearTexto(
-                        "nombre-tarea",
-                        tarea.name || "Sin nombre"
-                    )
+                const nombreTarea = crearTexto(
+                    "nombre-tarea",
+                    estiloTarea.icono + " " + (tarea.name || "Sin nombre")
                 );
+
+                nombreTarea.classList.add(estiloTarea.clase);
+
+                informacion.appendChild(nombreTarea);
 
                 if (curso.encontrado) {
 
@@ -676,8 +720,7 @@
                     const botonCompletar = document.createElement("button");
 
                     botonCompletar.type = "button";
-                    botonCompletar.textContent = "Completar tarea";
-
+                    botonCompletar.textContent = estiloTarea.boton;
                     botonCompletar.classList.add(
                         "boton-tarea",
                         "boton-completar"
@@ -685,7 +728,15 @@
 
                     botonCompletar.addEventListener("click", () => {
 
-                        completarTarea(tarea, botonCompletar);
+                        if (tarea.name === "Evaluar Recursos") {
+
+                            abrirModalRecursos(tarea);
+
+                        } else {
+
+                            completarTarea(tarea, botonCompletar);
+
+                        }
 
                     });
 
@@ -705,6 +756,42 @@
 
         }
 
+        function obtenerEstiloTarea(nombre) {
+
+            const estilos = {
+                "Evaluar Recursos": {
+                    clase: "tarea-recursos",
+                    icono: "📋",
+                    boton: "Evaluar recursos"
+                },
+                "Preparar materiales": {
+                    clase: "tarea-materiales",
+                    icono: "📦",
+                    boton: "Preparar materiales"
+                },
+                "Registrar y Elaborar propuesta": {
+                    clase: "tarea-propuesta",
+                    icono: "📄",
+                    boton: "Elaborar propuesta"
+                },
+                "Revisar propuesta": {
+                    clase: "tarea-propuesta",
+                    icono: "📝",
+                    boton: "Revisar propuesta"
+                },
+                "Confeccionar lista definitiva": {
+                    clase: "tarea-lista",
+                    icono: "👥",
+                    boton: "Confeccionar lista"
+                }
+            };
+
+            return estilos[nombre] || {
+                clase: "tarea-general",
+                icono: "📌",
+                boton: "Completar tarea"
+            };
+        }
 
         // ==========================================
         // VISUALIZAR UNA TAREA
@@ -833,6 +920,93 @@
             }
         }
 
+        let tareaRecursosActual = null;
+
+        function abrirModalRecursos(tarea) {
+
+            tareaRecursosActual = tarea;
+
+            document.getElementById("form-recursos").reset();
+
+            document.getElementById("curso-recursos").textContent =
+                tarea.curso?.tematica || "Curso no identificado";
+
+            document.getElementById("modal-recursos").showModal();
+        }
+
+        document.getElementById("form-recursos")
+            .addEventListener("submit", async function (event) {
+
+                event.preventDefault();
+
+                if (!tareaRecursosActual) {
+                    return;
+                }
+
+                const datos = {
+                    requiereAula:
+                        document.getElementById("requiereAula").checked,
+
+                    requierePlataforma:
+                        document.getElementById("requierePlataforma").checked,
+
+                    requiereEquipamiento:
+                        document.getElementById("requiereEquipamiento").checked
+                };
+
+                // Validar que se seleccione al menos un recurso
+                if (!datos.requiereAula &&
+                    !datos.requierePlataforma &&
+                    !datos.requiereEquipamiento) {
+
+                    alert("Debes seleccionar al menos un recurso.");
+                    return;
+                }
+
+                const boton = this.querySelector('button[type="submit"]');
+
+                boton.disabled = true;
+                boton.textContent = "Confirmando...";
+
+                try {
+
+                    const respuesta = await fetch(
+                        `/api/tareas/${tareaRecursosActual.id}/completar-recursos`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(datos)
+                        }
+                    );
+
+                    const resultado = await respuesta.json();
+
+                    if (!respuesta.ok) {
+                        throw new Error(
+                            resultado.error || "No se pudieron evaluar los recursos."
+                        );
+                    }
+
+                    document.getElementById("modal-recursos").close();
+
+                    tareaRecursosActual = null;
+
+                    alert("Recursos evaluados correctamente.");
+
+                    window.location.reload();
+
+                } catch (error) {
+
+                    alert(error.message);
+
+                } finally {
+
+                    boton.disabled = false;
+                    boton.textContent = "Confirmar recursos";
+                }
+            });
         // ==========================================
         // COMPLETAR UNA TAREA
         // ==========================================

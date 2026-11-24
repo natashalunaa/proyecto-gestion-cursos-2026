@@ -444,6 +444,15 @@ public class CursoController {
                                                                 "error",
                                                                 "La propuesta debe completarse desde su formulario."));
                         }
+                        
+                        // Los recursos deben completarse desde su formulario
+                        if ("Evaluar Recursos".equals(tarea.path("name").asText(""))) {
+
+                                return ResponseEntity.badRequest()
+                                                .body(Map.of(
+                                                                "error",
+                                                                "Los recursos deben evaluarse desde su formulario."));
+                        }
 
                         // Completar la tarea en Flowable
                         flowableService.completarTarea(tareaId);
@@ -463,6 +472,104 @@ public class CursoController {
                 }
         }
 
+        // ==========================================
+        // COMPLETAR TAREA EVALUAR RECURSOS
+        // ==========================================
+
+        @PostMapping("/api/tareas/{tareaId}/completar-recursos")
+        public ResponseEntity<?> completarRecursos(
+                        @PathVariable("tareaId") String tareaId,
+                        @RequestBody Map<String, Object> datos,
+                        HttpSession sesion) {
+
+                String usuario = (String) sesion.getAttribute("usuarioFlowable");
+
+                // Verificar que exista una sesion activa
+                if (usuario == null || usuario.isBlank()) {
+                        return ResponseEntity.status(401)
+                                        .body(Map.of(
+                                                        "error",
+                                                        "Debes iniciar sesion."));
+                }
+
+                try {
+
+                        // Buscar la tarea en Flowable
+                        JsonNode tarea = flowableService.obtenerTareaPorId(tareaId);
+
+                        if (tarea == null) {
+                                return ResponseEntity.status(404)
+                                                .body(Map.of(
+                                                                "error",
+                                                                "La tarea no existe."));
+                        }
+
+                        // Verificar que la tarea este asignada al usuario
+                        if (!usuario.equals(tarea.path("assignee").asText(""))) {
+                                return ResponseEntity.status(403)
+                                                .body(Map.of(
+                                                                "error",
+                                                                "No tienes permiso para completar esta tarea."));
+                        }
+
+                        // Verificar el tipo de tarea
+                        if (!"Evaluar Recursos".equals(tarea.path("name").asText(""))) {
+                                return ResponseEntity.badRequest()
+                                                .body(Map.of(
+                                                                "error",
+                                                                "La tarea no corresponde a Evaluar Recursos."));
+                        }
+
+                        // Verificar que las variables sean booleanas
+                        if (!(datos.get("requiereAula") instanceof Boolean)
+                                        || !(datos.get("requierePlataforma") instanceof Boolean)
+                                        || !(datos.get("requiereEquipamiento") instanceof Boolean)) {
+
+                                return ResponseEntity.badRequest()
+                                                .body(Map.of(
+                                                                "error",
+                                                                "Los recursos deben indicarse con valores booleanos."));
+                        }
+
+                        // Obtener los recursos seleccionados
+                        boolean requiereAula = Boolean.TRUE.equals(datos.get("requiereAula"));
+
+                        boolean requierePlataforma = Boolean.TRUE.equals(datos.get("requierePlataforma"));
+
+                        boolean requiereEquipamiento = Boolean.TRUE.equals(datos.get("requiereEquipamiento"));
+
+                        // Validar que se seleccione al menos un recurso
+                        if (!requiereAula
+                                        && !requierePlataforma
+                                        && !requiereEquipamiento) {
+
+                                return ResponseEntity.badRequest()
+                                                .body(Map.of(
+                                                                "error",
+                                                                "Debe seleccionar al menos un recurso."));
+                        }
+
+                        // Completar la tarea enviando las variables a Flowable
+                        flowableService.completarTareaConRecursos(
+                                        tareaId,
+                                        requiereAula,
+                                        requierePlataforma,
+                                        requiereEquipamiento);
+
+                        return ResponseEntity.ok(Map.of(
+                                        "mensaje",
+                                        "Recursos evaluados correctamente."));
+
+                } catch (Exception e) {
+
+                        e.printStackTrace();
+
+                        return ResponseEntity.internalServerError()
+                                        .body(Map.of(
+                                                        "error",
+                                                        "No se pudo completar la evaluacion de recursos."));
+                }
+        }
         // ==========================================
         // GUARDAR PROPUESTA SIN COMPLETAR LA TAREA
         // ==========================================
