@@ -63,4 +63,3 @@ hs_err_pid*
 .venv/
 __pycache__/
 *.pyc
-/mineriaProcesos/eventos.csv
