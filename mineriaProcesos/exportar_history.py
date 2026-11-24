@@ -30,6 +30,9 @@ ACTIVIDADES = {
     "Recordatorio",
     "Archivar",
     "FinSinCurso",
+    "EsperarRegistro",
+    "CalcularActivos",
+    "Activity_1eg7zcl",
 }
 
 ARCHIVO_SALIDA = Path(__file__).resolve().parent / "eventos.csv"
