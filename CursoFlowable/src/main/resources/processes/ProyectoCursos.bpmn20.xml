@@ -51,7 +51,7 @@
         <bpmn:flowNodeRef>Activity_0iibzwu</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Confirmar</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Preparar</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Event_0farfur</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Cancelado</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Fin</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Revisar</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>EnviarInforme</bpmn:flowNodeRef>
@@ -135,8 +135,18 @@
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="ModificarProp" sourceRef="Modificar" targetRef="Revisar" />
     <bpmn:sequenceFlow id="Flow_175t1j3" sourceRef="Activity_12e0et1" targetRef="Event_0w2kitf" />
-    <bpmn:sequenceFlow id="Flow_1ymw5qe" sourceRef="Event_0farfur" targetRef="Activity_12e0et1" />
-    <bpmn:sequenceFlow id="Preparado" sourceRef="Preparar" targetRef="Confirmar" />
+    <bpmn:sequenceFlow id="Flow_1ymw5qe" sourceRef="Gateway_Cancelado" targetRef="Activity_12e0et1">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cursoCancelado == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Preparado" sourceRef="Preparar" targetRef="Gateway_Cancelado" />
+
+    <bpmn:exclusiveGateway id="Gateway_Cancelado" name="Curso cancelado?" default="Flow_ContinuarCurso">
+      <bpmn:incoming>Preparado</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ymw5qe</bpmn:outgoing>
+      <bpmn:outgoing>Flow_ContinuarCurso</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:sequenceFlow id="Flow_ContinuarCurso" sourceRef="Gateway_Cancelado" targetRef="Confirmar" />
     <bpmn:scriptTask id="Activity_12e0et1" name="Notificar Cierre" scriptFormat="javascript">
       <bpmn:incoming>Flow_1ymw5qe</bpmn:incoming>
       <bpmn:outgoing>Flow_175t1j3</bpmn:outgoing>
@@ -180,6 +190,9 @@
     <bpmn:sequenceFlow id="FechaDictar" sourceRef="Fecha" targetRef="Dictar" />
     <bpmn:sequenceFlow id="Flow_1sdjeh6" sourceRef="Dictar" targetRef="Informe" />
     <bpmn:subProcess id="Preparar" name="Preparar curso">
+      <bpmn:extensionElements>
+        <flowable:executionListener event="start" expression="${execution.setVariable('cursoCancelado', false)}" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1ffpwga</bpmn:incoming>
       <bpmn:outgoing>Preparado</bpmn:outgoing>
       <bpmn:startEvent id="SubInicio" name="">
@@ -297,12 +310,15 @@
           <bpmn:compensateEventDefinition activityRef="Equipo" />
         </bpmn:intermediateThrowEvent>
         <bpmn:userTask id="VerificarCompensacion" name="Verificar compensaciones" flowable:assignee="admin">
+          <bpmn:extensionElements>
+            <flowable:taskListener event="complete" expression="${task.setVariable('cursoCancelado', true)}" />
+          </bpmn:extensionElements>
           <bpmn:incoming>Flow_VerificarCompensacion</bpmn:incoming>
           <bpmn:outgoing>Flow_0h5si5f</bpmn:outgoing>
         </bpmn:userTask>
         <bpmn:endEvent id="Event_0snigbc">
           <bpmn:incoming>Flow_0h5si5f</bpmn:incoming>
-          <bpmn:errorEventDefinition id="ErrorEventDefinition_0dmehr3" />
+          
         </bpmn:endEvent>
         <bpmn:sequenceFlow id="Flow_099pqle" sourceRef="Event_1g4xmqo" targetRef="Event_1rvo4k6" />
         <bpmn:sequenceFlow id="Flow_CompensarVirtual" sourceRef="Event_1rvo4k6" targetRef="CompensarVirtual" />
@@ -344,10 +360,7 @@
       <bpmn:association id="Association_0oqohax" associationDirection="One" sourceRef="Event_1ypcc1j" targetRef="Activity_1m08pcl" />
       <bpmn:association id="Association_0f6fnvw" associationDirection="One" sourceRef="Event_1gsyqer" targetRef="Activity_02hrooc" />
     </bpmn:subProcess>
-    <bpmn:boundaryEvent id="Event_0farfur" attachedToRef="Preparar">
-      <bpmn:outgoing>Flow_1ymw5qe</bpmn:outgoing>
-      <bpmn:errorEventDefinition id="ErrorEventDefinition_1dbg61w" />
-    </bpmn:boundaryEvent>
+    
     <bpmn:userTask id="Informe" name="Elaborar informe de resultados">
       <bpmn:incoming>Flow_1sdjeh6</bpmn:incoming>
       <bpmn:outgoing>InformeEnviar</bpmn:outgoing>
@@ -410,7 +423,7 @@
       ]]></bpmn:script>
     </bpmn:scriptTask>
     <bpmn:scriptTask id="Confirmar" name="Enviar confirmación" scriptFormat="javascript">
-      <bpmn:incoming>Preparado</bpmn:incoming>
+      <bpmn:incoming>Flow_ContinuarCurso</bpmn:incoming>
       <bpmn:outgoing>Flow_1topamj</bpmn:outgoing>
       <bpmn:script><![CDATA[
           execution.setVariable("cursoConfirmado", true);
@@ -823,9 +836,7 @@
       <bpmndi:BPMNShape id="Activity_1q1t6s2_di" bpmnElement="EnviarInforme">
         <dc:Bounds x="1395" y="1690" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0dkt4qu_di" bpmnElement="Event_0farfur">
-        <dc:Bounds x="522" y="1572" width="36" height="36" />
-      </bpmndi:BPMNShape>
+      
       <bpmndi:BPMNEdge id="DI_main3" bpmnElement="main3">
         <di:waypoint x="765" y="350" />
         <di:waypoint x="980" y="350" />
