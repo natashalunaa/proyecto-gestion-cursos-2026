@@ -183,6 +183,9 @@ public class CursoController {
 
                 String usuario = (String) sesion.getAttribute("usuarioFlowable");
 
+                // Obtener el rol del usuario conectado.
+                String rol = (String) sesion.getAttribute("tipoUsuario");
+
                 // Verificar que exista una sesion activa
                 if (usuario == null || usuario.isBlank()) {
 
@@ -192,13 +195,21 @@ public class CursoController {
                                                         "Debes iniciar sesion."));
                 }
 
+                // Permitir únicamente usuarios internos autorizados.
+                if (!"administrativo".equals(rol) && !"docente".equals(rol)) {
+                        return ResponseEntity.status(403)
+                                        .body(Map.of("error", "No tienes permiso para consultar tareas."));
+                }
+
                 try {
 
                         // Consultar tareas asignadas al usuario
                         JsonNode asignadas = flowableService.obtenerTareasUsuario(usuario);
 
-                        // Consultar tareas disponibles para reclamar
-                        JsonNode candidatas = flowableService.obtenerTareasCandidatas(usuario);
+                        // Consultar tareas reclamables únicamente para administrativos.
+                        JsonNode candidatas = "administrativo".equals(rol)
+                                        ? flowableService.obtenerTareasCandidatas(usuario)
+                                        : new ObjectMapper().createObjectNode();
 
                         // Evitar tareas duplicadas
                         Map<String, JsonNode> tareasUnicas = new LinkedHashMap<>();
@@ -345,6 +356,15 @@ public class CursoController {
                                                         "error",
                                                         "Debes iniciar sesion."));
                 }
+                // Permitir reclamar tareas únicamente a los administrativos.
+                String rol = (String) sesion.getAttribute("tipoUsuario");
+
+                if (!"administrativo".equals(rol)) {
+                        return ResponseEntity.status(403)
+                                        .body(Map.of(
+                                                        "error",
+                                                        "No tienes permiso para reclamar tareas."));
+                }
 
                 try {
 
@@ -411,7 +431,15 @@ public class CursoController {
                                                         "error",
                                                         "Debes iniciar sesion."));
                 }
+                // Verificar que el usuario tenga un rol autorizado.
+                String rol = (String) sesion.getAttribute("tipoUsuario");
 
+                if (!"administrativo".equals(rol) && !"docente".equals(rol)) {
+                        return ResponseEntity.status(403)
+                                        .body(Map.of(
+                                                        "error",
+                                                        "No tienes permiso para completar tareas."));
+                }
                 try {
 
                         JsonNode tarea = flowableService.obtenerTareaPorId(tareaId);
@@ -425,6 +453,25 @@ public class CursoController {
                         }
 
                         String responsable = tarea.path("assignee").asText("");
+                        // Identificar si la tarea corresponde al desarrollo de un curso.
+                        boolean esDesarrollo = "Desarrollar curso".equalsIgnoreCase(
+                                        tarea.path("name").asText("").trim());
+
+                        // Los docentes solo pueden completar el desarrollo de cursos.
+                        if ("docente".equals(rol) && !esDesarrollo) {
+                                return ResponseEntity.status(403)
+                                                .body(Map.of(
+                                                                "error",
+                                                                "Esta tarea debe completarse desde Flowable."));
+                        }
+
+                        // El desarrollo del curso corresponde únicamente a docentes.
+                        if ("administrativo".equals(rol) && esDesarrollo) {
+                                return ResponseEntity.status(403)
+                                                .body(Map.of(
+                                                                "error",
+                                                                "Esta tarea corresponde al personal docente."));
+                        }
 
                         // Verificar que la tarea pertenezca al usuario
                         if (!usuario.equals(responsable)) {
@@ -444,7 +491,7 @@ public class CursoController {
                                                                 "error",
                                                                 "La propuesta debe completarse desde su formulario."));
                         }
-                        
+
                         // Los recursos deben completarse desde su formulario
                         if ("Evaluar Recursos".equals(tarea.path("name").asText(""))) {
 
@@ -490,6 +537,15 @@ public class CursoController {
                                         .body(Map.of(
                                                         "error",
                                                         "Debes iniciar sesion."));
+                }
+                // Permitir la evaluación de recursos únicamente a administrativos.
+                String rol = (String) sesion.getAttribute("tipoUsuario");
+
+                if (!"administrativo".equals(rol)) {
+                        return ResponseEntity.status(403)
+                                        .body(Map.of(
+                                                        "error",
+                                                        "No tienes permiso para evaluar recursos."));
                 }
 
                 try {

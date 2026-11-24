@@ -151,6 +151,45 @@ public class FlowableService {
                 }
         }
 
+        // Identifica el rol del usuario según su grupo de Flowable.
+        public String obtenerRolUsuario(String usuario) throws Exception {
+
+                String url = flowableUrl + "/identity/groups?member="
+                                + URLEncoder.encode(usuario, StandardCharsets.UTF_8)
+                                + "&size=100";
+
+                HttpRequest request = HttpRequest.newBuilder()
+                                .uri(URI.create(url))
+                                .header("Authorization", autenticacion())
+                                .GET()
+                                .build();
+
+                HttpResponse<String> respuesta = cliente.send(
+                                request, HttpResponse.BodyHandlers.ofString());
+
+                if (respuesta.statusCode() != 200) {
+                        throw new IllegalStateException(
+                                        "No se pudieron consultar los grupos del usuario.");
+                }
+
+                JsonNode grupos = objectMapper.readTree(respuesta.body()).path("data");
+
+                for (JsonNode grupo : grupos) {
+
+                        String idGrupo = grupo.path("id").asText();
+
+                        if ("Docentes".equals(idGrupo)) {
+                                return "docente";
+                        }
+
+                        if ("Administracion".equals(idGrupo)) {
+                                return "administrativo";
+                        }
+                }
+
+                return "sin_rol";
+        }
+
         public JsonNode obtenerTareasUsuario(String usuario) throws Exception {
 
                 String url = flowableUrl + "/runtime/tasks?assignee="

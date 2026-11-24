@@ -6,12 +6,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import curso.flowable.repository.EmpresaRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import curso.flowable.service.FlowableService;
 
+// Gestiona la autenticación y las sesiones de los usuarios.
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -20,13 +21,20 @@ public class AuthController {
     private final HttpClient client = HttpClient.newHttpClient();
 
     private final EmpresaRepository empresaRepository;
+    private final FlowableService flowableService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public AuthController(EmpresaRepository empresaRepository) {
+    // Inicializa las dependencias del controlador.
+    public AuthController(EmpresaRepository empresaRepository,
+            FlowableService flowableService) {
+
         this.empresaRepository = empresaRepository;
+        this.flowableService = flowableService;
     }
 
+    // Representa las credenciales ingresadas por el usuario.
     public static class Credenciales {
+
         private String usuario;
         private String contrasena;
 
@@ -47,37 +55,51 @@ public class AuthController {
         }
     }
 
+    // Autentica empresas y usuarios internos de Flowable.
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Credenciales datos, HttpServletRequest servletRequest) {
-        if (datos == null || datos.getUsuario() == null || datos.getUsuario().isBlank()
-                || datos.getContrasena() == null || datos.getContrasena().isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Ingresá usuario y contraseña."));
+    public ResponseEntity<?> login(
+            @RequestBody Credenciales datos,
+            HttpServletRequest servletRequest) {
+
+        // Validar las credenciales ingresadas.
+        if (datos == null || datos.getUsuario() == null
+                || datos.getUsuario().isBlank()
+                || datos.getContrasena() == null
+                || datos.getContrasena().isBlank()) {
+
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Ingresá usuario y contraseña."));
         }
 
-        // Primero comprobar si el usuario pertenece a una empresa
+        // Comprobar si el usuario pertenece a una empresa.
         try {
-            Map<String, Object> empresa = empresaRepository.buscarPorUsuarioAcceso(datos.getUsuario());
+
+            Map<String, Object> empresa =
+                    empresaRepository.buscarPorUsuarioAcceso(datos.getUsuario());
 
             if (empresa != null) {
 
                 String passwordHash = (String) empresa.get("password_acceso");
 
-                // Verificar la contraseña con BCrypt
+                // Verificar la contraseña con BCrypt.
                 if (passwordHash == null ||
-                        !passwordEncoder.matches(datos.getContrasena(), passwordHash)) {
+                        !passwordEncoder.matches(
+                                datos.getContrasena(), passwordHash)) {
 
                     return ResponseEntity.status(401)
-                            .body(Map.of("error", "Usuario o contraseña incorrectos."));
+                            .body(Map.of(
+                                    "error",
+                                    "Usuario o contraseña incorrectos."));
                 }
 
-                // Evitar reutilizar una sesión anterior
+                // Evitar reutilizar una sesión anterior.
                 HttpSession anterior = servletRequest.getSession(false);
 
                 if (anterior != null) {
                     anterior.invalidate();
                 }
 
-                // Crear la sesión de la empresa
+                // Crear la sesión de la empresa.
                 HttpSession session = servletRequest.getSession(true);
 
                 session.setAttribute(
@@ -92,6 +114,7 @@ public class AuthController {
             }
 
         } catch (Exception e) {
+
             e.printStackTrace();
 
             return ResponseEntity.internalServerError()
@@ -100,33 +123,85 @@ public class AuthController {
                             "No se pudo verificar el acceso de la empresa."));
         }
 
-        // Si no es una empresa, continúa el login existente de Flowable
+        // Autenticar al usuario interno mediante Flowable.
         try {
+
             String token = Base64.getEncoder().encodeToString(
-                    (datos.getUsuario() + ":" + datos.getContrasena()).getBytes(StandardCharsets.UTF_8));
+                    (datos.getUsuario() + ":" + datos.getContrasena())
+                            .getBytes(StandardCharsets.UTF_8));
+
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(flowableUrl + "/runtime/tasks?size=1"))
                     .header("Authorization", "Basic " + token)
-                    .GET().build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 401 || response.statusCode() == 403) {
-                return ResponseEntity.status(401).body(Map.of("error", "Credenciales incorrectas o sin acceso."));
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(
+                    request, HttpResponse.BodyHandlers.ofString());
+
+            // Verificar si las credenciales son correctas.
+            if (response.statusCode() == 401
+                    || response.statusCode() == 403) {
+
+                return ResponseEntity.status(401)
+                        .body(Map.of(
+                                "error",
+                                "Credenciales incorrectas o sin acceso."));
             }
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                return ResponseEntity.status(502).body(Map.of("error", "Flowable no pudo validar el acceso."));
+
+            if (response.statusCode() < 200
+                    || response.statusCode() >= 300) {
+
+                return ResponseEntity.status(502)
+                        .body(Map.of(
+                                "error",
+                                "Flowable no pudo validar el acceso."));
             }
+
+            // Identificar el rol según el grupo de Flowable.
+            String rol = flowableService.obtenerRolUsuario(
+                    datos.getUsuario());
+
+            // Impedir el acceso a usuarios sin un rol autorizado.
+            if (!"administrativo".equals(rol)
+                    && !"docente".equals(rol)) {
+
+                return ResponseEntity.status(403)
+                        .body(Map.of(
+                                "error",
+                                "El usuario no tiene un rol autorizado."));
+            }
+
+            // Evitar reutilizar una sesión anterior.
             HttpSession anterior = servletRequest.getSession(false);
-            if (anterior != null)
+
+            if (anterior != null) {
                 anterior.invalidate();
+            }
+
+            // Crear la sesión del usuario interno.
             HttpSession session = servletRequest.getSession(true);
+
             session.setAttribute("usuarioFlowable", datos.getUsuario());
-            return ResponseEntity.ok(Map.of("usuario", datos.getUsuario()));
+            session.setAttribute("tipoUsuario", rol);
+
+            // Devolver el usuario y su rol al sitio web.
+            return ResponseEntity.ok(Map.of(
+                    "usuario", datos.getUsuario(),
+                    "tipoUsuario", rol));
+
         } catch (Exception e) {
-            return ResponseEntity.status(502).body(Map.of("error", "No se pudo conectar con Flowable."));
+
+            e.printStackTrace();
+
+            return ResponseEntity.status(502)
+                    .body(Map.of(
+                            "error",
+                            "No se pudo conectar con Flowable."));
         }
     }
 
-
+    // Consulta los datos de la sesión activa.
     @GetMapping("/me")
     public ResponseEntity<?> me(HttpServletRequest request) {
 
@@ -137,33 +212,41 @@ public class AuthController {
                     .body(Map.of("error", "No hay sesión activa."));
         }
 
-        // Sesión de una empresa
+        // Consultar la sesión de una empresa.
         Integer empresaId = (Integer) session.getAttribute("empresaId");
 
         if (empresaId != null) {
+
             return ResponseEntity.ok(Map.of(
                     "tipoUsuario", "empresa",
                     "empresaId", empresaId));
         }
 
-        // Sesión de un usuario interno de Flowable
+        // Consultar el usuario interno y su rol.
         String usuario = (String) session.getAttribute("usuarioFlowable");
+        String rol = (String) session.getAttribute("tipoUsuario");
 
-        if (usuario != null) {
+        if (usuario != null && rol != null) {
+
             return ResponseEntity.ok(Map.of(
                     "usuario", usuario,
-                    "tipoUsuario", "flowable"));
+                    "tipoUsuario", rol));
         }
 
         return ResponseEntity.status(401)
                 .body(Map.of("error", "No hay sesión activa."));
     }
 
+    // Cierra la sesión del usuario.
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
+
         HttpSession session = request.getSession(false);
-        if (session != null)
+
+        if (session != null) {
             session.invalidate();
+        }
+
         return ResponseEntity.noContent().build();
     }
 }

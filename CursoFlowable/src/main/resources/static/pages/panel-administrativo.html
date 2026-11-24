@@ -1,151 +1,100 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Panel administrativo - Institución de Capacitación</title>
-
     <link rel="stylesheet" href="/css/estilos.css">
     <link rel="stylesheet" href="/css/panel-administrativo.css">
 </head>
-
 <body>
-
     <div class="panel-layout">
-
         <aside class="menu-lateral">
-
             <a href="/index.html" class="marca-panel">
                 <span>🎓</span>
                 <span>Institución de Capacitación</span>
             </a>
-
             <div class="usuario-panel">
                 <p class="usuario-rol">Personal administrativo</p>
                 <p class="usuario-nombre">Administrador</p>
             </div>
-
             <nav class="navegacion-lateral">
                 <a href="#tareas" class="opcion-menu activa">
                     Mis tareas
                 </a>
             </nav>
-
         </aside>
-
         <main class="contenido-panel">
-
             <header class="cabecera-panel">
-
                 <div>
                     <h1>Panel administrativo</h1>
                     <p>Consulta y gestión de tareas del proceso de capacitación.</p>
                 </div>
-
                 <div class="acciones-cabecera">
-
                     <span class="etiqueta-usuario">
                         Administración
                     </span>
-
                     <button type="button" class="boton-cerrar-sesion" onclick="cerrarSesion(event)">
                         Cerrar sesión
                     </button>
-
                 </div>
-
             </header>
-
             <!-- Resumen de tareas -->
-
             <section class="resumen-panel">
-
                 <div class="tarjeta-resumen">
                     <p>Total de tareas</p>
                     <h2 id="total-tareas">—</h2>
                 </div>
-
                 <div class="tarjeta-resumen">
                     <p>Tareas asignadas</p>
                     <h2 id="total-asignadas">—</h2>
                 </div>
-
                 <div class="tarjeta-resumen">
                     <p>Tareas disponibles</p>
                     <h2 id="total-disponibles">—</h2>
                 </div>
-
             </section>
-
             <!-- Sección principal de tareas -->
-
             <section class="seccion-panel" id="tareas">
-
                 <div class="encabezado-seccion">
                     <h2>Mis tareas</h2>
                     <p>Tareas asignadas y disponibles para reclamar.</p>
                 </div>
-
                 <!-- Buscador y filtros -->
-
                 <div class="filtros-tareas">
-
                     <div class="campo-filtro campo-busqueda">
-
                         <label for="buscar-tarea">Buscar</label>
-
                         <input type="search" id="buscar-tarea" placeholder="Buscar curso, empresa, tarea o ID...">
-
                     </div>
-
                     <div class="campo-filtro">
-
                         <label for="filtro-estado">Asignación</label>
-
                         <select id="filtro-estado">
                             <option value="todas">Todas</option>
                             <option value="asignada">Asignadas</option>
                             <option value="disponible">Disponibles</option>
                         </select>
-
                     </div>
-
                     <div class="campo-filtro">
-
                         <label for="filtro-tipo">Tipo de tarea</label>
-
                         <select id="filtro-tipo">
                             <option value="">Todas las tareas</option>
                         </select>
-
                     </div>
-
                     <div class="campo-filtro">
-
                         <label for="filtro-proceso">Proceso</label>
-
                         <select id="filtro-proceso">
                             <option value="todos">Todos</option>
                             <option value="actual">Modelo actual</option>
                             <option value="anterior">Modelos anteriores</option>
                         </select>
-
                     </div>
-
                 </div>
-
                 <p id="cantidad-resultados" class="cantidad-resultados">
                     Cargando tareas...
                 </p>
-
                 <!-- Tabla de tareas -->
-
                 <div class="tabla-contenedor">
-
                     <table class="tabla-tareas">
-
                         <thead>
                             <tr>
                                 <th>Tarea y curso</th>
@@ -153,64 +102,43 @@
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-
                         <tbody id="lista-tareas">
-
                             <tr>
                                 <td colspan="3">Cargando tareas...</td>
                             </tr>
-
                         </tbody>
-
                     </table>
-
                 </div>
-
             </section>
-
         </main>
-
     </div>
     <dialog id="modal-recursos" class="modal-recursos">
-
         <h2>Evaluar recursos</h2>
-
         <p id="curso-recursos"></p>
-
         <p>Seleccioná los recursos necesarios para el curso.</p>
-
         <form id="form-recursos">
-
             <label class="opcion-recurso">
                 <input type="checkbox" id="requiereAula">
                 Aula física
             </label>
-
             <label class="opcion-recurso">
                 <input type="checkbox" id="requierePlataforma">
                 Aula virtual
             </label>
-
             <label class="opcion-recurso">
                 <input type="checkbox" id="requiereEquipamiento">
                 Equipamiento especial
             </label>
-
             <div class="acciones-modal">
-
                 <button type="button" class="boton-cancelar"
                     onclick="document.getElementById('modal-recursos').close()">
                     Cancelar
                 </button>
-
                 <button type="submit" class="boton-tarea">
                     Confirmar recursos
                 </button>
-
             </div>
-
         </form>
-
     </dialog>
 
     <script>
@@ -219,6 +147,39 @@
 
         let todasLasTareas = [];
         let usuarioActual = "";
+
+        // Verificar que el usuario tenga una sesión y el rol administrativo.
+        async function verificarSesion() {
+            try {
+                const respuesta = await fetch("/api/auth/me", {
+                    credentials: "same-origin",
+                    cache: "no-store"
+                });
+                if (!respuesta.ok) {
+                    window.location.replace("/pages/login.html");
+                    return false;
+                }
+                const datos = await respuesta.json();
+                if (datos.tipoUsuario === "docente") {
+                    window.location.replace("/pages/panel-docente.html");
+                    return false;
+                }
+                if (datos.tipoUsuario === "empresa") {
+                    window.location.replace("/pages/panel-empresa.html");
+                    return false;
+                }
+                if (datos.tipoUsuario !== "administrativo") {
+                    window.location.replace("/pages/login.html");
+                    return false;
+                }
+                usuarioActual = datos.usuario;
+                return true;
+            } catch (error) {
+                console.error("Error al verificar la sesión:", error);
+                window.location.replace("/pages/login.html");
+                return false;
+            }
+        }
 
 
         // ==========================================
@@ -1078,7 +1039,13 @@
         // INICIALIZAR EL PANEL
         // ==========================================
 
-        document.addEventListener("DOMContentLoaded", () => {
+        // Inicializar el panel únicamente si el usuario es administrativo.
+        document.addEventListener("DOMContentLoaded", async () => {
+
+            const sesionValida = await verificarSesion();
+            if (!sesionValida) {
+                return;
+            }
 
             document.getElementById("buscar-tarea")
                 .addEventListener("input", aplicarFiltros);
@@ -1092,12 +1059,11 @@
             document.getElementById("filtro-proceso")
                 .addEventListener("change", aplicarFiltros);
 
-            cargarTareas();
+            await cargarTareas();
 
         });
 
     </script>
 
 </body>
-
 </html>
