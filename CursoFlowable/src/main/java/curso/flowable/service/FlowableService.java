@@ -231,6 +231,16 @@ public class FlowableService {
                 enviarCompletarTarea(tareaId, datos);
         }
 
+        // Reclamar una tarea para el usuario que inició sesión.
+        public void reclamarTarea(String tareaId, String usuario) throws Exception {
+
+                Map<String, Object> datos = Map.of(
+                                "action", "claim",
+                                "assignee", usuario);
+
+                enviarCompletarTarea(tareaId, datos);
+        }
+
         // Completar la propuesta enviando sus variables a Flowable.
         public void completarTareaConPropuesta(
                         String tareaId,

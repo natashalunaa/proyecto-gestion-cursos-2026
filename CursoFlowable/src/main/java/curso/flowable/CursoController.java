@@ -328,6 +328,72 @@ public class CursoController {
         }
 
         // ==========================================
+        // RECLAMAR UNA TAREA DISPONIBLE
+        // ==========================================
+
+        @PostMapping("/api/tareas/{tareaId}/reclamar")
+        public ResponseEntity<?> reclamarTarea(
+                        @PathVariable("tareaId") String tareaId,
+                        HttpSession sesion) {
+
+                String usuario = (String) sesion.getAttribute("usuarioFlowable");
+
+                // Verificar que exista una sesión activa
+                if (usuario == null || usuario.isBlank()) {
+                        return ResponseEntity.status(401)
+                                        .body(Map.of(
+                                                        "error",
+                                                        "Debes iniciar sesion."));
+                }
+
+                try {
+
+                        // Consultar las tareas que el usuario puede reclamar
+                        JsonNode candidatas = flowableService.obtenerTareasCandidatas(usuario);
+
+                        boolean disponible = false;
+
+                        // Comprobar que la tarea pertenezca a sus candidatas
+                        for (JsonNode tarea : candidatas.path("data")) {
+
+                                if (tarea.path("id").asText().equals(tareaId)
+                                                && tarea.path("assignee").isNull()) {
+
+                                        disponible = true;
+                                        break;
+                                }
+                        }
+
+                        if (!disponible) {
+                                return ResponseEntity.status(403)
+                                                .body(Map.of(
+                                                                "error",
+                                                                "La tarea no esta disponible para reclamar."));
+                        }
+
+                        // Reclamar la tarea en Flowable
+                        flowableService.reclamarTarea(tareaId, usuario);
+
+                        return ResponseEntity.ok(Map.of(
+                                        "mensaje",
+                                        "Tarea reclamada correctamente.",
+                                        "tareaId",
+                                        tareaId,
+                                        "usuario",
+                                        usuario));
+
+                } catch (Exception e) {
+
+                        e.printStackTrace();
+
+                        return ResponseEntity.internalServerError()
+                                        .body(Map.of(
+                                                        "error",
+                                                        "No se pudo reclamar la tarea."));
+                }
+        }
+
+        // ==========================================
         // COMPLETAR UNA TAREA NORMAL
         // ==========================================
 

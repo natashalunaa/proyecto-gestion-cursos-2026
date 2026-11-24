@@ -642,6 +642,31 @@
 
                 grupoBotones.appendChild(botonVer);
 
+                // Reclamar tareas que todavía no están asignadas
+
+                if (!tarea.assignee) {
+
+                    const botonReclamar = document.createElement("button");
+
+                    botonReclamar.type = "button";
+                    botonReclamar.textContent = "Reclamar tarea";
+
+                    botonReclamar.classList.add(
+                        "boton-tarea",
+                        "boton-completar"
+                    );
+
+                    botonReclamar.addEventListener("click", () => {
+
+                        reclamarTarea(tarea, botonReclamar);
+
+                    });
+
+                    grupoBotones.appendChild(botonReclamar);
+
+                }
+
+
 
                 // Completar tareas asignadas que no sean propuestas
 
@@ -753,6 +778,60 @@
             }
         }
 
+        // ==========================================
+        // RECLAMAR UNA TAREA
+        // ==========================================
+
+        async function reclamarTarea(tarea, boton) {
+
+            const confirmar = confirm(
+                "¿Querés reclamar esta tarea?\n\n" +
+                "Tarea: " + tarea.name
+            );
+
+            if (!confirmar) return;
+
+            boton.disabled = true;
+
+            try {
+
+                const respuesta = await fetch(
+                    `/api/tareas/${encodeURIComponent(tarea.id)}/reclamar`,
+                    {
+                        method: "POST",
+                        credentials: "same-origin"
+                    }
+                );
+
+                const resultado = await respuesta.json();
+
+                if (respuesta.status === 401) {
+                    window.location.replace("/pages/login.html");
+                    return;
+                }
+
+                if (!respuesta.ok) {
+                    throw new Error(
+                        resultado.error || "No se pudo reclamar la tarea."
+                    );
+                }
+
+                alert("¡Tarea reclamada correctamente!");
+
+                await cargarTareas();
+
+            } catch (error) {
+
+                console.error("Error al reclamar tarea:", error);
+
+                alert(error.message);
+
+            } finally {
+
+                boton.disabled = false;
+
+            }
+        }
 
         // ==========================================
         // COMPLETAR UNA TAREA
