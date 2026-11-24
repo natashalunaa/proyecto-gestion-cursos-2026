@@ -369,7 +369,7 @@
       </bpmn:dataOutputAssociation>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="InformeEnviar" sourceRef="Informe" targetRef="EnviarInforme" />
-    <bpmn:sequenceFlow id="InformeArchivar" sourceRef="EnviarInforme" targetRef="Fin">
+    <bpmn:sequenceFlow id="InformeArchivar" sourceRef="EnviarInforme" targetRef="LiberarAulaNormal">
       <bpmn:extensionElements>
         <flowable:executionListener
             event="take"
@@ -432,9 +432,49 @@
     </bpmn:scriptTask>
     <bpmn:dataObjectReference id="DatosInforme" name="Informe de resultados" dataObjectRef="DatosInforme_Object" />
     <bpmn:dataObject id="DatosInforme_Object" name="DatosInforme" />
-    <bpmn:endEvent id="Fin" name="Liberar recursos.&#10;Â Curso finalizado">
+        <bpmn:serviceTask id="LiberarAulaNormal" name="Liberar aula fisica" flowable:class="curso.flowable.LiberarAula">
       <bpmn:incoming>InformeArchivar</bpmn:incoming>
-      <bpmn:compensateEventDefinition id="CompensateEventDefinition_1klq9n1" />
+      <bpmn:outgoing>Flow_LiberarVirtualNormal</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sequenceFlow id="Flow_LiberarVirtualNormal" sourceRef="LiberarAulaNormal" targetRef="LiberarVirtualNormal" />
+
+    <bpmn:scriptTask id="LiberarVirtualNormal" name="Liberar aula virtual" scriptFormat="javascript">
+      <bpmn:incoming>Flow_LiberarVirtualNormal</bpmn:incoming>
+      <bpmn:outgoing>Flow_EvaluarLiberacionEquipo</bpmn:outgoing>
+      <bpmn:script><![CDATA[
+        if (execution.getVariable("aulaVirtualReservada") == true) {
+            execution.setVariable("aulaVirtualReservada", false);
+            print("Aula virtual liberada");
+        }
+      ]]></bpmn:script>
+    </bpmn:scriptTask>
+
+    <bpmn:sequenceFlow id="Flow_EvaluarLiberacionEquipo" sourceRef="LiberarVirtualNormal" targetRef="Gateway_LiberarEquipo" />
+
+    <bpmn:exclusiveGateway id="Gateway_LiberarEquipo" name="Equipamiento reservado?" default="Flow_SinEquipo">
+      <bpmn:incoming>Flow_EvaluarLiberacionEquipo</bpmn:incoming>
+      <bpmn:outgoing>Flow_LiberarEquipoNormal</bpmn:outgoing>
+      <bpmn:outgoing>Flow_SinEquipo</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:sequenceFlow id="Flow_LiberarEquipoNormal" sourceRef="Gateway_LiberarEquipo" targetRef="LiberarEquipoNormal">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('equipamientoReservado') == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:userTask id="LiberarEquipoNormal" name="Liberar equipamiento">
+      <bpmn:extensionElements>
+        <flowable:taskListener event="complete" expression="${task.setVariable('equipamientoReservado', false)}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_LiberarEquipoNormal</bpmn:incoming>
+      <bpmn:outgoing>Flow_EquipoLiberado</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:sequenceFlow id="Flow_EquipoLiberado" sourceRef="LiberarEquipoNormal" targetRef="Fin" />
+    <bpmn:sequenceFlow id="Flow_SinEquipo" sourceRef="Gateway_LiberarEquipo" targetRef="Fin" />
+    <bpmn:endEvent id="Fin" name="Curso finalizado">
+      <bpmn:incoming>Flow_EquipoLiberado</bpmn:incoming>
+      <bpmn:incoming>Flow_SinEquipo</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:userTask id="Revisar" name="Revisar propuesta">
       <bpmn:incoming>ModificarProp</bpmn:incoming>
