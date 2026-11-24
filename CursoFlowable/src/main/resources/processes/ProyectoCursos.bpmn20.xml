@@ -17,6 +17,7 @@
   <bpmn:message id="Msg_enc" name="Encuesta" />
   <bpmn:message id="Msg_resenc" name="Respuesta de encuesta" />
   <bpmn:message id="Msg_informe" name="Informe de resultados" />
+  <bpmn:message id="Msg_registro_confirmado" name="Msg_registro_confirmado" />
   <bpmn:process id="Process_Curso" name="Organizar curso de capacitacion" isExecutable="true">
    <bpmn:documentation>Modelo ejecutable. Los recordatorios se cuentan por versiÃ³n de propuesta. La fecha programada se obtiene de la propuesta aceptada. Para cada participante se espera una respuesta de encuesta; el enunciado no fija un vencimiento. La empresa se representa como pool de caja negra; los mensajes internos del subproceso se expresan con tareas de envÃ­o/recepciÃ³n y eventos de mensaje.</bpmn:documentation>
     <bpmn:extensionElements>
@@ -376,9 +377,16 @@
             expression="${execution.setVariable('resultadoProceso', 'finalizado')}" />
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_0g8vm9l" sourceRef="Inicio" targetRef="CalcularActivos" />
+    <bpmn:sequenceFlow id="Flow_0g8vm9l" sourceRef="Inicio" targetRef="EsperarRegistro" />
+        <bpmn:intermediateCatchEvent id="EsperarRegistro" name="Esperar registro de solicitud">
+      <bpmn:incoming>Flow_0g8vm9l</bpmn:incoming>
+      <bpmn:outgoing>Flow_RegistroConfirmado</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Msg_registro_confirmado" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:sequenceFlow id="Flow_RegistroConfirmado" sourceRef="EsperarRegistro" targetRef="CalcularActivos" />
     <bpmn:serviceTask id="CalcularActivos" name="Calcular cursos activos" flowable:class="curso.flowable.CalcularCursosActivos">
-    <bpmn:incoming>Flow_0g8vm9l</bpmn:incoming>
+    <bpmn:incoming>Flow_RegistroConfirmado</bpmn:incoming>
     <bpmn:outgoing>Flow_Calcular_Viabilidad</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_Calcular_Viabilidad" sourceRef="CalcularActivos" targetRef="Activity_1xw400l" />

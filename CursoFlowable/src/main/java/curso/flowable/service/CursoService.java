@@ -72,6 +72,8 @@ public class CursoService {
                     e);
         }
 
+        flowableService.confirmarRegistro(processInstanceId);
+
         return processInstanceId;
     }
 
