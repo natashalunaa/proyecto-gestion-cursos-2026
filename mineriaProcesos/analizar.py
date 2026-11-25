@@ -32,8 +32,8 @@ df = df.sort_values(
 
 # Normalizar nombres mediante los identificadores BPMN.
 NOMBRES_ACTIVIDADES = {
-    "Aceptar": "Aceptaci\u00f3n",
-    "Plazo": "5 d\u00edas",
+    "sid-BCDCCC94-87B1-4A9C-AA42-860B0CB20553": "Aceptaci\u00f3n",
+    "sid-AE90424C-2654-4C64-909C-BD085A34654C": "5 d\u00edas",
 }
 
 df["actividad"] = df["actividad_id"].map(

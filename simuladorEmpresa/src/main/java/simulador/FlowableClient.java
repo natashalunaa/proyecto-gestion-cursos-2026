@@ -14,20 +14,22 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class FlowableClient {
 
-    private static final String BASE_URL =
-            "http://localhost:8080/flowable-ui/process-api";
+    private static final String BASE_URL = "http://localhost:8080/flowable-ui/process-api";
 
     private static final String USUARIO = "admin";
     private static final String PASSWORD = "test";
 
-    private final HttpClient cliente =
-            HttpClient.newHttpClient();
+    private final HttpClient cliente = HttpClient.newHttpClient();
 
-    private final ObjectMapper mapper =
-            new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     private String obtenerAutorizacion() {
 
@@ -35,8 +37,7 @@ public class FlowableClient {
 
         String codificado = Base64.getEncoder()
                 .encodeToString(
-                        credenciales.getBytes(StandardCharsets.UTF_8)
-                );
+                        credenciales.getBytes(StandardCharsets.UTF_8));
 
         return "Basic " + codificado;
     }
@@ -56,8 +57,7 @@ public class FlowableClient {
 
             HttpResponse<String> respuesta = cliente.send(
                     request,
-                    HttpResponse.BodyHandlers.ofString()
-            );
+                    HttpResponse.BodyHandlers.ofString());
 
             System.out.println(
                     "Código HTTP: " + respuesta.statusCode());
@@ -78,6 +78,7 @@ public class FlowableClient {
     }
 
     // Consulta las ejecuciones que esperan un mensaje.
+
     public List<String> listarEjecuciones(String mensaje) {
 
         String url = BASE_URL
@@ -105,10 +106,11 @@ public class FlowableClient {
 
         for (JsonNode ejecucion : ejecuciones) {
 
-            String id = ejecucion.path("id").asText();
+            String id = ejecucion.path("id").asText("");
 
-            String actividad =
-                    ejecucion.path("activityId").asText();
+            String processInstanceId = ejecucion
+                    .path("processInstanceId")
+                    .asText("");
 
             if (id.isBlank()) {
 
@@ -118,13 +120,24 @@ public class FlowableClient {
                 return null;
             }
 
+            if (processInstanceId.isBlank()) {
+
+                processInstanceId = obtenerInstanciaDeEjecucion(id);
+            }
+
+            String datosCurso = "Empresa no identificada";
+
+            if (processInstanceId != null
+                    && !processInstanceId.isBlank()) {
+
+                datosCurso = obtenerNombreEmpresaYCurso(processInstanceId);
+            }
+
             ids.add(id);
 
             System.out.println(
-                    ids.size()
-                            + ". Actividad: " + actividad
-                            + " | ID: " + id
-            );
+                    ids.size() + ". " + datosCurso
+                            + " | ID: " + id);
         }
 
         return ids;
@@ -252,8 +265,7 @@ public class FlowableClient {
 
         Map<String, Object> datos = Map.of(
                 "action", "messageEventReceived",
-                "messageName", mensaje
-        );
+                "messageName", mensaje);
 
         enviarSolicitudMensaje(executionId, datos);
     }
@@ -267,14 +279,12 @@ public class FlowableClient {
         Map<String, Object> variableFecha = Map.of(
                 "name", "fechaCurso",
                 "type", "string",
-                "value", fechaCurso
-        );
+                "value", fechaCurso);
 
         Map<String, Object> datos = Map.of(
                 "action", "messageEventReceived",
                 "messageName", mensaje,
-                "variables", List.of(variableFecha)
-        );
+                "variables", List.of(variableFecha));
 
         return enviarSolicitudMensaje(executionId, datos);
     }
@@ -301,8 +311,7 @@ public class FlowableClient {
 
             HttpResponse<String> respuesta = cliente.send(
                     request,
-                    HttpResponse.BodyHandlers.ofString()
-            );
+                    HttpResponse.BodyHandlers.ofString());
 
             System.out.println(
                     "Código HTTP: " + respuesta.statusCode());
@@ -355,8 +364,7 @@ public class FlowableClient {
 
             HttpResponse<String> respuesta = cliente.send(
                     request,
-                    HttpResponse.BodyHandlers.ofString()
-            );
+                    HttpResponse.BodyHandlers.ofString());
 
             if (respuesta.statusCode() != 200) {
 
@@ -387,5 +395,44 @@ public class FlowableClient {
 
             return null;
         }
+    }
+
+    private String obtenerNombreEmpresaYCurso(String processInstanceId) {
+
+        String url = "jdbc:postgresql://localhost:5433/institucion_cursos";
+        String usuario = "flowable";
+        String password = System.getenv("DB_PASSWORD");
+
+        String sql = """
+                SELECT e.razon_social, c.tematica
+                FROM cursos c
+                JOIN empresas e ON c.empresa_id = e.id
+                WHERE c.process_instance_id = ?
+                """;
+
+        try (Connection conexion = DriverManager.getConnection(url, usuario, password);
+
+                PreparedStatement consulta = conexion.prepareStatement(sql)) {
+
+            consulta.setString(1, processInstanceId);
+
+            try (ResultSet resultado = consulta.executeQuery()) {
+
+                if (resultado.next()) {
+
+                    return resultado.getString("razon_social")
+                            + " | "
+                            + resultado.getString("tematica");
+                }
+            }
+
+        } catch (SQLException e) {
+
+            System.out.println(
+                    "No se pudieron consultar los datos del curso: "
+                            + e.getMessage());
+        }
+
+        return "Empresa no identificada";
     }
 }

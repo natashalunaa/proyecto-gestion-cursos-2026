@@ -19,7 +19,7 @@ public class FlowableHistoryService implements AutoCloseable {
                         "jdbc:postgresql://127.0.0.1:5433/flowable"
                 )
                 .setJdbcUsername("flowable")
-                .setJdbcPassword("flow10")
+                .setJdbcPassword("flowable")
                 .setDatabaseSchemaUpdate(
                         ProcessEngineConfiguration.DB_SCHEMA_UPDATE_FALSE
                 )
@@ -38,3 +38,4 @@ public class FlowableHistoryService implements AutoCloseable {
         processEngine.close();
     }
 }
+

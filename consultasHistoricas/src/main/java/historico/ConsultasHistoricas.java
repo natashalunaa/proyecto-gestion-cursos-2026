@@ -164,7 +164,7 @@ public class ConsultasHistoricas {
             }
 
             // Excluir preparaciones que no terminaron normalmente.
-            if (!porActividad.containsKey("SubFin")) {
+            if (!porActividad.containsKey("sid-85D22149-CBE0-424A-9E0D-9C03CFB275CD")) {
                 continue;
             }
 
