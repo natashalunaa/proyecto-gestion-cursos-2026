@@ -16,6 +16,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -345,6 +346,51 @@ public class FlowableService {
                 enviarCompletarTarea(tareaId, datos);
         }
 
+        // Consultar los integrantes del grupo Docentes.
+        public JsonNode obtenerDocentes() throws Exception {
+
+                String url = flowableUrl
+                                + "/identity/users?memberOfGroup=Docentes&size=100";
+
+                HttpRequest request = HttpRequest.newBuilder()
+                                .uri(URI.create(url))
+                                .header("Authorization", autenticacion())
+                                .GET()
+                                .build();
+
+                HttpResponse<String> respuesta = cliente.send(
+                                request, HttpResponse.BodyHandlers.ofString());
+
+                if (respuesta.statusCode() != 200) {
+                        throw new IllegalStateException(
+                                        "No se pudieron consultar los docentes.");
+                }
+
+                return objectMapper.readTree(respuesta.body());
+        }
+
+        // Completar la selección del docente.
+        public void completarTareaConDocente(
+                        String tareaId,
+                        String docenteSeleccionado) throws Exception {
+
+                if (docenteSeleccionado == null
+                                || docenteSeleccionado.isBlank()) {
+                        throw new IllegalArgumentException(
+                                        "Debe seleccionar un docente.");
+                }
+
+                Map<String, Object> datos = Map.of(
+                                "action", "complete",
+                                "variables", List.of(
+                                                Map.of(
+                                                                "name", "docenteSeleccionado",
+                                                                "value", docenteSeleccionado,
+                                                                "type", "string")));
+
+                enviarCompletarTarea(tareaId, datos);
+        }
+
         // Método compartido para enviar la orden a Flowable.
         private void enviarCompletarTarea(
                         String tareaId,
@@ -471,5 +517,27 @@ public class FlowableService {
                 }
 
                 return resultado;
+        }
+
+        public void completarTareaConInforme(
+                        String tareaId,
+                        String informeResultados,
+                        boolean informeAdjunto) throws Exception {
+
+                Map<String, Object> datos = new HashMap<>();
+
+                datos.put("action", "complete");
+
+                datos.put("variables", List.of(
+                                Map.of(
+                                                "name", "informeResultados",
+                                                "value", informeResultados,
+                                                "type", "string"),
+                                Map.of(
+                                                "name", "informeAdjunto",
+                                                "value", informeAdjunto,
+                                                "type", "boolean")));
+
+                enviarCompletarTarea(tareaId, datos);
         }
 }

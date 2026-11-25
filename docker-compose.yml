@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: flowable
       POSTGRES_USER: flowable
-      POSTGRES_PASSWORD: flow10
+      POSTGRES_PASSWORD: flowable
     ports:
       - "5433:5432"
     volumes:
@@ -44,8 +44,8 @@ services:
     environment:
       - SPRING.DATASOURCE.URL=jdbc:postgresql://flowable-postgres:5432/flowable
       - SPRING.DATASOURCE.USERNAME=flowable
-      - SPRING.DATASOURCE.PASSWORD=flow10
-      - DB_PASSWORD=flow10
+      - SPRING.DATASOURCE.PASSWORD=flowable
+      - DB_PASSWORD=flowable
       - FLOWABLE_INTEGRATION_SECRET=clave-demo-gestion-cursos-2026
     depends_on:
       postgres:

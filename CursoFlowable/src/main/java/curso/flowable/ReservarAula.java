@@ -2,6 +2,7 @@ package curso.flowable;
 
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
+import org.flowable.engine.delegate.BpmnError;
 
 public class ReservarAula implements JavaDelegate {
 
@@ -13,7 +14,8 @@ public class ReservarAula implements JavaDelegate {
             (Boolean) execution.getVariable("aulaDisponible");
 
         if (Boolean.FALSE.equals(disponible)) {
-            throw new IllegalStateException(
+            throw new BpmnError(
+                "SIN_AULAS",
                 "No hay aulas disponibles"
             );
         }

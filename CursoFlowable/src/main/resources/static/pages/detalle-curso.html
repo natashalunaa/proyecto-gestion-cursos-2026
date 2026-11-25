@@ -1,11 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Detalle del curso - Institución de Capacitación</title>
 
@@ -29,9 +27,7 @@
                     Mis cursos
                 </a>
 
-                <a href="/pages/login.html"
-                   class="boton-login"
-                   onclick="cerrarSesion(event)">
+                <a href="/pages/login.html" class="boton-login" onclick="cerrarSesion(event)">
                     Cerrar sesión
                 </a>
 
@@ -42,8 +38,7 @@
 
     <main class="contenedor detalle-curso">
 
-        <a href="/pages/panel-empresa.html"
-           class="enlace-volver">
+        <a href="/pages/panel-empresa.html" class="enlace-volver">
             ← Volver a mis cursos
         </a>
 
@@ -51,16 +46,12 @@
             <p>Cargando información del curso...</p>
         </section>
 
-        <section class="mensaje-estado"
-                 id="mensaje-error"
-                 hidden>
+        <section class="mensaje-estado" id="mensaje-error" hidden>
             <h2>No se pudo consultar el curso</h2>
             <p id="texto-error"></p>
         </section>
 
-        <section class="informacion-curso"
-                 id="informacion-curso"
-                 hidden>
+        <section class="informacion-curso" id="informacion-curso" hidden>
 
             <p class="identificador-curso" id="id-curso"></p>
 
@@ -107,26 +98,20 @@
 
                 <div class="dato-completo">
                     <strong>Programa del curso</strong>
-                    <p id="programa-curso"
-                       class="programa-curso"></p>
+                    <p id="programa-curso" class="programa-curso"></p>
                 </div>
 
             </div>
 
         </section>
 
-        <section class="preparacion"
-                 id="seccion-preparacion"
-                 hidden>
+        <section class="preparacion" id="seccion-preparacion" hidden>
 
             <div class="cabecera-preparacion">
 
                 <h2>Avance de la preparación</h2>
 
-                <button type="button"
-                        class="boton-actualizar"
-                        id="boton-actualizar"
-                        onclick="cargarCurso()">
+                <button type="button" class="boton-actualizar" id="boton-actualizar" onclick="cargarCurso()">
                     ↻ Actualizar
                 </button>
 
@@ -140,18 +125,14 @@
 
             <p id="mensaje-actividades"></p>
 
-            <div class="actividades"
-                 id="actividades-curso">
+            <div class="actividades" id="actividades-curso">
             </div>
 
-            <p class="ultima-actualizacion"
-               id="ultima-actualizacion"></p>
+            <p class="ultima-actualizacion" id="ultima-actualizacion"></p>
 
         </section>
 
-        <section class="mensaje-estado"
-                 id="mensaje-negociacion"
-                 hidden>
+        <section class="mensaje-estado" id="mensaje-negociacion" hidden>
 
             <h2>Propuesta en negociación</h2>
 
@@ -162,9 +143,7 @@
 
         </section>
 
-        <section class="mensaje-estado"
-                 id="mensaje-confirmado"
-                 hidden>
+        <section class="mensaje-estado" id="mensaje-confirmado" hidden>
 
             <h2>Curso confirmado</h2>
 
@@ -175,9 +154,7 @@
 
         </section>
 
-        <section class="mensaje-estado"
-                 id="mensaje-desarrollo"
-                 hidden>
+        <section class="mensaje-estado" id="mensaje-desarrollo" hidden>
 
             <h2>Curso en desarrollo</h2>
 
@@ -187,9 +164,7 @@
 
         </section>
 
-        <section class="mensaje-estado"
-                 id="mensaje-informe"
-                 hidden>
+        <section class="mensaje-estado" id="mensaje-informe" hidden>
 
             <h2>Elaboración del informe</h2>
 
@@ -200,19 +175,22 @@
 
         </section>
 
-        <section class="mensaje-estado mensaje-finalizado"
-                 id="mensaje-finalizado"
-                 hidden>
+        <section class="mensaje-estado mensaje-finalizado" id="mensaje-finalizado" hidden>
 
             <h2>✓ Curso finalizado</h2>
 
             <p>La capacitación ha finalizado.</p>
+            <p id="mensaje-disponibilidad-informe">
+                Ya puedes descargar el informe de resultados.
+            </p>
+
+            <button type="button" id="boton-descargar-informe" class="boton-actualizar" onclick="descargarInforme()">
+                Descargar informe PDF
+            </button>
 
         </section>
 
-        <section class="mensaje-estado mensaje-cancelado"
-                 id="mensaje-cancelado"
-                 hidden>
+        <section class="mensaje-estado mensaje-cancelado" id="mensaje-cancelado" hidden>
 
             <h2>Curso cancelado</h2>
 
@@ -289,8 +267,8 @@
 
             elemento(id).textContent =
                 valor === null ||
-                valor === undefined ||
-                valor === ""
+                    valor === undefined ||
+                    valor === ""
                     ? "Sin definir"
                     : valor;
         }
@@ -316,8 +294,8 @@
             if (coincidencia) {
 
                 return coincidencia[3] + "/" +
-                       coincidencia[2] + "/" +
-                       coincidencia[1];
+                    coincidencia[2] + "/" +
+                    coincidencia[1];
             }
 
             return String(fecha);
@@ -663,6 +641,66 @@
                 elemento("mensaje-carga").hidden = true;
 
                 elemento("boton-actualizar").disabled = false;
+            }
+        }
+
+        async function descargarInforme() {
+
+            const boton = elemento("boton-descargar-informe");
+
+            boton.disabled = true;
+            boton.textContent = "Descargando...";
+
+            try {
+
+                const respuesta = await fetch(
+                    "/api/empresas/mis-cursos/" +
+                    encodeURIComponent(idCurso) +
+                    "/informe",
+                    {
+                        credentials: "same-origin",
+                        cache: "no-store"
+                    }
+                );
+
+                if (respuesta.status === 401) {
+                    window.location.replace("/pages/login.html");
+                    return;
+                }
+
+                if (!respuesta.ok) {
+
+                    const datos = await respuesta.json();
+
+                    throw new Error(
+                        datos.error || "No se pudo descargar el informe."
+                    );
+                }
+
+                const archivo = await respuesta.blob();
+
+                const url = URL.createObjectURL(archivo);
+
+                const enlace = document.createElement("a");
+
+                enlace.href = url;
+                enlace.download = "informe-curso-" + idCurso + ".pdf";
+
+                document.body.appendChild(enlace);
+
+                enlace.click();
+                enlace.remove();
+
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+            } catch (error) {
+
+                alert(error.message);
+
+            } finally {
+
+                boton.disabled = false;
+                boton.textContent = "Descargar informe PDF";
             }
         }
 
