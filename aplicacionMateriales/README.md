@@ -57,9 +57,3 @@ Se desplegó el proceso `PruebaMateriales` para verificar la integración con Fl
 Se comprobó que la aplicación permite consultar una tarea disponible, reclamarla y completarla.
 
 El proceso utilizado para las pruebas se encuentra en `pruebas/prueba-materiales.bpmn20.xml`.
-
-## Pendiente de validación
-
-- Probar la aplicación con una instancia del BPMN principal del proyecto.
-- Verificar los usuarios y grupos administrativos reales.
-- Confirmar el comportamiento de la aplicación al trabajar con las tareas del proceso completo.
