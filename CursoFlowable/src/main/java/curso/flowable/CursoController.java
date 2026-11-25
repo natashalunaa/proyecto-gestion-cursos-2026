@@ -155,18 +155,28 @@ public class CursoController {
                 }
         }
 
-        // ==========================================
-        // CONSULTAR CURSO POR ID
-        // ==========================================
-
+        // Permite consultar cursos por ID únicamente a administrativos.
         @GetMapping("/api/cursos/{id}")
         public ResponseEntity<?> obtenerCurso(
-                        @PathVariable("id") Integer id) {
+                        @PathVariable("id") Integer id,
+                        HttpSession sesion) {
+
+                String usuario = (String) sesion.getAttribute("usuarioFlowable");
+                String rol = (String) sesion.getAttribute("tipoUsuario");
+
+                if (rol == null) {
+                        return ResponseEntity.status(401)
+                                        .body(Map.of("error", "Debes iniciar sesión."));
+                }
+
+                if (!"administrativo".equals(rol) || usuario == null) {
+                        return ResponseEntity.status(403)
+                                        .body(Map.of("error", "Acceso no autorizado."));
+                }
 
                 Map<String, Object> curso = cursoService.buscarCursoPorId(id);
 
                 if (curso == null) {
-
                         return ResponseEntity.notFound().build();
                 }
 
@@ -323,15 +333,28 @@ public class CursoController {
         // CONSULTAR CURSO POR INSTANCIA DE FLOWABLE
         // ==========================================
 
+        // Permite consultar cursos por instancia únicamente a administrativos.
         @GetMapping("/api/cursos/instancia/{processInstanceId}")
         public ResponseEntity<?> obtenerCursoPorInstancia(
-                        @PathVariable("processInstanceId") String processInstanceId) {
+                        @PathVariable("processInstanceId") String processInstanceId,
+                        HttpSession sesion) {
 
-                Map<String, Object> curso = cursoService.buscarCursoPorProcessInstanceId(
-                                processInstanceId);
+                String usuario = (String) sesion.getAttribute("usuarioFlowable");
+                String rol = (String) sesion.getAttribute("tipoUsuario");
+
+                if (rol == null) {
+                        return ResponseEntity.status(401)
+                                        .body(Map.of("error", "Debes iniciar sesión."));
+                }
+
+                if (!"administrativo".equals(rol) || usuario == null) {
+                        return ResponseEntity.status(403)
+                                        .body(Map.of("error", "Acceso no autorizado."));
+                }
+
+                Map<String, Object> curso = cursoService.buscarCursoPorProcessInstanceId(processInstanceId);
 
                 if (curso == null) {
-
                         return ResponseEntity.notFound().build();
                 }
 
