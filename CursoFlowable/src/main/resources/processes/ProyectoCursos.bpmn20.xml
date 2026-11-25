@@ -535,15 +535,15 @@
   <bpmndi:BPMNDiagram id="Diagram_Cursos">
     <bpmndi:BPMNPlane id="Plane_Cursos" bpmnElement="Collaboration_Cursos">
       <bpmndi:BPMNShape id="DI_Pool_Institucion" bpmnElement="Pool_Institucion" isHorizontal="true">
-        <dc:Bounds x="155" y="80" width="1505" height="1910" />
+        <dc:Bounds x="155" y="80" width="2105" height="1910" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Lane_04yvzzz_di" bpmnElement="Lane_04yvzzz" isHorizontal="true">
-        <dc:Bounds x="185" y="80" width="1475" height="1740" />
+        <dc:Bounds x="185" y="80" width="2075" height="1740" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Lane_0sq5phl_di" bpmnElement="Lane_0sq5phl" isHorizontal="true">
-        <dc:Bounds x="185" y="1820" width="1475" height="170" />
+        <dc:Bounds x="185" y="1820" width="2075" height="170" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DI_Esperar" bpmnElement="Esperar">
@@ -553,7 +553,7 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DI_Inicio" bpmnElement="Inicio">
-        <dc:Bounds x="242" y="332" width="36" height="36" />
+        <dc:Bounds x="242" y="142" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="218" y="308" width="84" height="14" />
         </bpmndi:BPMNLabel>
@@ -593,6 +593,9 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_04cm2ce_di" bpmnElement="Activity_12e0et1">
         <dc:Bounds x="570" y="1690" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Cancelado_di" bpmnElement="Gateway_Cancelado" isMarkerVisible="true">
+        <dc:Bounds x="852" y="1640" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0w2kitf_di" bpmnElement="Event_0w2kitf">
         <dc:Bounds x="742" y="1712" width="36" height="36" />
@@ -698,8 +701,17 @@
         <dc:Bounds x="550" y="1210" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_048d5em_di" bpmnElement="Activity_048d5em" isExpanded="true">
-        <dc:Bounds x="1280" y="1410" width="300" height="120" />
+        <dc:Bounds x="1280" y="1320" width="300" height="250" />
         <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CompensarVirtual_di" bpmnElement="CompensarVirtual">
+        <dc:Bounds x="1402" y="1360" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CompensarEquipo_di" bpmnElement="CompensarEquipo">
+        <dc:Bounds x="1492" y="1360" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="VerificarCompensacion_di" bpmnElement="VerificarCompensacion">
+        <dc:Bounds x="1370" y="1485" width="100" height="60" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_05opllj_di" bpmnElement="Event_1rvo4k6">
         <dc:Bounds x="1402" y="1442" width="36" height="36" />
@@ -717,9 +729,25 @@
         <di:waypoint x="1348" y="1460" />
         <di:waypoint x="1402" y="1460" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_CompensarVirtual_di" bpmnElement="Flow_CompensarVirtual">
+        <di:waypoint x="1420" y="1442" />
+        <di:waypoint x="1420" y="1396" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_CompensarEquipo_di" bpmnElement="Flow_CompensarEquipo">
+        <di:waypoint x="1438" y="1378" />
+        <di:waypoint x="1492" y="1378" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_VerificarCompensacion_di" bpmnElement="Flow_VerificarCompensacion">
+        <di:waypoint x="1528" y="1378" />
+        <di:waypoint x="1550" y="1378" />
+        <di:waypoint x="1550" y="1515" />
+        <di:waypoint x="1470" y="1515" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0h5si5f_di" bpmnElement="Flow_0h5si5f">
-        <di:waypoint x="1438" y="1460" />
-        <di:waypoint x="1492" y="1460" />
+        <di:waypoint x="1420" y="1545" />
+        <di:waypoint x="1420" y="1555" />
+        <di:waypoint x="1510" y="1555" />
+        <di:waypoint x="1510" y="1478" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Activity_0b9e576_di" bpmnElement="Activity_1m08pcl">
         <dc:Bounds x="1000" y="1480" width="100" height="80" />
@@ -857,6 +885,12 @@
       <bpmndi:BPMNShape id="Activity_0ljetn1_di" bpmnElement="Activity_1xw400l">
         <dc:Bounds x="210" y="450" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EsperarRegistro_di" bpmnElement="EsperarRegistro">
+        <dc:Bounds x="242" y="242" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CalcularActivos_di" bpmnElement="CalcularActivos">
+        <dc:Bounds x="210" y="310" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_18edb9q_di" bpmnElement="Event_18edb9q">
         <dc:Bounds x="522" y="582" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -864,7 +898,7 @@
         <dc:Bounds x="370" y="560" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0p6t2qk_di" bpmnElement="Confirmar">
-        <dc:Bounds x="827" y="1690" width="100" height="80" />
+        <dc:Bounds x="852" y="1620" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DI_DatosInforme" bpmnElement="DatosInforme">
         <dc:Bounds x="1237" y="1709" width="36" height="50" />
@@ -873,7 +907,7 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_03v7uj6_di" bpmnElement="Fin">
-        <dc:Bounds x="1577" y="1712" width="36" height="36" />
+        <dc:Bounds x="2092" y="1712" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1553" y="1677" width="83" height="27" />
         </bpmndi:BPMNLabel>
@@ -883,6 +917,18 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1q1t6s2_di" bpmnElement="EnviarInforme">
         <dc:Bounds x="1395" y="1690" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="LiberarAulaNormal_di" bpmnElement="LiberarAulaNormal">
+        <dc:Bounds x="1540" y="1690" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="LiberarVirtualNormal_di" bpmnElement="LiberarVirtualNormal">
+        <dc:Bounds x="1680" y="1690" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_LiberarEquipo_di" bpmnElement="Gateway_LiberarEquipo" isMarkerVisible="true">
+        <dc:Bounds x="1820" y="1705" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="LiberarEquipoNormal_di" bpmnElement="LiberarEquipoNormal">
+        <dc:Bounds x="1910" y="1690" width="100" height="80" />
       </bpmndi:BPMNShape>
       
       <bpmndi:BPMNEdge id="DI_main3" bpmnElement="main3">
@@ -964,13 +1010,17 @@
         <di:waypoint x="742" y="1730" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1ymw5qe_di" bpmnElement="Flow_1ymw5qe">
-        <di:waypoint x="540" y="1608" />
-        <di:waypoint x="540" y="1730" />
-        <di:waypoint x="570" y="1730" />
+        <di:waypoint x="852" y="1645" />
+        <di:waypoint x="620" y="1645" />
+        <di:waypoint x="620" y="1690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ContinuarCurso_di" bpmnElement="Flow_ContinuarCurso">
+        <di:waypoint x="877" y="1670" />
+        <di:waypoint x="877" y="1690" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DI_Preparado" bpmnElement="Preparado">
         <di:waypoint x="877" y="1590" />
-        <di:waypoint x="877" y="1690" />
+        <di:waypoint x="877" y="1620" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DI_FechaDictar" bpmnElement="FechaDictar">
         <di:waypoint x="905" y="1910" />
@@ -985,13 +1035,43 @@
         <di:waypoint x="1445" y="1910" />
         <di:waypoint x="1445" y="1770" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_InformeArchivar" bpmnElement="InformeArchivar">
+      <bpmndi:BPMNEdge id="InformeArchivar_di" bpmnElement="InformeArchivar">
         <di:waypoint x="1495" y="1730" />
-        <di:waypoint x="1577" y="1730" />
+        <di:waypoint x="1540" y="1730" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_LiberarVirtualNormal_di" bpmnElement="Flow_LiberarVirtualNormal">
+        <di:waypoint x="1640" y="1730" />
+        <di:waypoint x="1680" y="1730" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_EvaluarLiberacionEquipo_di" bpmnElement="Flow_EvaluarLiberacionEquipo">
+        <di:waypoint x="1780" y="1730" />
+        <di:waypoint x="1820" y="1730" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_LiberarEquipoNormal_di" bpmnElement="Flow_LiberarEquipoNormal">
+        <di:waypoint x="1870" y="1730" />
+        <di:waypoint x="1910" y="1730" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_EquipoLiberado_di" bpmnElement="Flow_EquipoLiberado">
+        <di:waypoint x="2010" y="1730" />
+        <di:waypoint x="2092" y="1730" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_SinEquipo_di" bpmnElement="Flow_SinEquipo">
+        <di:waypoint x="1845" y="1755" />
+        <di:waypoint x="1845" y="1795" />
+        <di:waypoint x="2110" y="1795" />
+        <di:waypoint x="2110" y="1748" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0g8vm9l_di" bpmnElement="Flow_0g8vm9l">
-        <di:waypoint x="260" y="368" />
-        <di:waypoint x="260" y="450" />
+        <di:waypoint x="260" y="178"/>
+        <di:waypoint x="260" y="242"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RegistroConfirmado_di" bpmnElement="Flow_RegistroConfirmado">
+        <di:waypoint x="260" y="278"/>
+        <di:waypoint x="260" y="310"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Calcular_Viabilidad_di" bpmnElement="Flow_Calcular_Viabilidad">
+        <di:waypoint x="260" y="390"/>
+        <di:waypoint x="260" y="450"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0kbnm1d_di" bpmnElement="Flow_0kbnm1d">
         <di:waypoint x="310" y="490" />
