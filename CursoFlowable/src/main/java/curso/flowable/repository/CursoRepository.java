@@ -10,123 +10,152 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Repository
 public class CursoRepository {
 
-    private final JdbcTemplate jdbcTemplate;
+        private final JdbcTemplate jdbcTemplate;
 
-    public CursoRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
-    // Guardar una solicitud de curso en PostgreSQL
-    public void guardarCurso(
-            SolicitudCurso solicitud,
-            String processInstanceId) {
-
-        jdbcTemplate.update(
-                "INSERT INTO cursos "
-                        + "(empresa_id, process_instance_id, tematica, "
-                        + "descripcion, cantidad_participantes, "
-                        + "fechas_preferidas, estado) "
-                        + "VALUES (?, ?, ?, ?, ?, ?, 'en_evaluacion')",
-
-                solicitud.empresaId(),
-                processInstanceId,
-                solicitud.tematica(),
-                solicitud.descripcion(),
-                solicitud.cantidadParticipantes(),
-                solicitud.fechasPreferidas());
-    }
-
-    // Buscar un curso por su ID en PostgreSQL
-    public Map<String, Object> buscarCursoPorId(Integer cursoId) {
-
-        String sql = "SELECT * FROM cursos WHERE id = ?";
-
-        List<Map<String, Object>> resultados =
-                jdbcTemplate.queryForList(sql, cursoId);
-
-        if (resultados.isEmpty()) {
-            return null;
+        public CursoRepository(JdbcTemplate jdbcTemplate) {
+                this.jdbcTemplate = jdbcTemplate;
         }
 
-        return resultados.get(0);
-    }
+        // Guardar una solicitud de curso en PostgreSQL
+        public void guardarCurso(
+                        SolicitudCurso solicitud,
+                        String processInstanceId) {
 
-    // Buscar un curso por la instancia del proceso en Flowable
-    public Map<String, Object> buscarCursoPorProcessInstanceId(
-            String processInstanceId) {
+                jdbcTemplate.update(
+                                "INSERT INTO cursos "
+                                                + "(empresa_id, process_instance_id, tematica, "
+                                                + "descripcion, cantidad_participantes, "
+                                                + "fechas_preferidas, estado) "
+                                                + "VALUES (?, ?, ?, ?, ?, ?, 'en_evaluacion')",
 
-        String sql = "SELECT c.*, e.razon_social AS empresa "
-                + "FROM cursos c "
-                + "LEFT JOIN empresas e ON c.empresa_id = e.id "
-                + "WHERE c.process_instance_id = ?";
-
-        List<Map<String, Object>> resultados =
-                jdbcTemplate.queryForList(sql, processInstanceId);
-
-        if (resultados.isEmpty()) {
-            return null;
+                                solicitud.empresaId(),
+                                processInstanceId,
+                                solicitud.tematica(),
+                                solicitud.descripcion(),
+                                solicitud.cantidadParticipantes(),
+                                solicitud.fechasPreferidas());
         }
 
-        return resultados.get(0);
-    }
+        // Buscar un curso por su ID en PostgreSQL
+        public Map<String, Object> buscarCursoPorId(Integer cursoId) {
 
-    // Guardar los datos de la propuesta de un curso
-    public int guardarPropuesta(
-            String processInstanceId,
-            String programa,
-            BigDecimal presupuesto,
-            LocalDate fechaInicioPosible,
-            LocalDate fechaFinPropuesta) {
+                String sql = "SELECT * FROM cursos WHERE id = ?";
 
-        String sql = "UPDATE cursos "
-                + "SET programa = ?, "
-                + "presupuesto = ?, "
-                + "fecha_inicio_posible = ?, "
-                + "fecha_fin_propuesta = ? "
-                + "WHERE process_instance_id = ?";
+                List<Map<String, Object>> resultados = jdbcTemplate.queryForList(sql, cursoId);
 
-        return jdbcTemplate.update(
-                sql,
-                programa,
-                presupuesto,
-                fechaInicioPosible,
-                fechaFinPropuesta,
-                processInstanceId);
-    }
+                if (resultados.isEmpty()) {
+                        return null;
+                }
 
-    // Obtener todos los cursos asociados a una empresa
-    public List<Map<String, Object>> buscarCursosPorEmpresaId(
-            Integer empresaId) {
+                return resultados.get(0);
+        }
 
-        String sql = "SELECT id, tematica, cantidad_participantes, "
-                + "estado, process_instance_id "
-                + "FROM cursos "
-                + "WHERE empresa_id = ? "
-                + "ORDER BY id DESC";
+        // Buscar un curso por la instancia del proceso en Flowable
+        public Map<String, Object> buscarCursoPorProcessInstanceId(
+                        String processInstanceId) {
 
-        return jdbcTemplate.queryForList(sql, empresaId);
-    }
+                String sql = "SELECT c.*, e.razon_social AS empresa "
+                                + "FROM cursos c "
+                                + "LEFT JOIN empresas e ON c.empresa_id = e.id "
+                                + "WHERE c.process_instance_id = ?";
 
-    // Actualizar el estado de un curso asociado a una instancia
-    // de Flowable, verificando su estado anterior
-    public int actualizarEstadoCurso(
-            String processInstanceId,
-            String estadoAnterior,
-            String nuevoEstado) {
+                List<Map<String, Object>> resultados = jdbcTemplate.queryForList(sql, processInstanceId);
 
-        String sql = "UPDATE cursos "
-                + "SET estado = ? "
-                + "WHERE process_instance_id = ? "
-                + "AND estado = ?";
+                if (resultados.isEmpty()) {
+                        return null;
+                }
 
-        return jdbcTemplate.update(
-                sql,
-                nuevoEstado,
-                processInstanceId,
-                estadoAnterior);
-    }
+                return resultados.get(0);
+        }
+
+        // Guardar los datos de la propuesta de un curso
+        public int guardarPropuesta(
+                        String processInstanceId,
+                        String programa,
+                        BigDecimal presupuesto,
+                        LocalDate fechaInicioPosible,
+                        LocalDate fechaFinPropuesta) {
+
+                String sql = "UPDATE cursos "
+                                + "SET programa = ?, "
+                                + "presupuesto = ?, "
+                                + "fecha_inicio_posible = ?, "
+                                + "fecha_fin_propuesta = ? "
+                                + "WHERE process_instance_id = ?";
+
+                return jdbcTemplate.update(
+                                sql,
+                                programa,
+                                presupuesto,
+                                fechaInicioPosible,
+                                fechaFinPropuesta,
+                                processInstanceId);
+        }
+
+        // Obtener todos los cursos asociados a una empresa
+        public List<Map<String, Object>> buscarCursosPorEmpresaId(
+                        Integer empresaId) {
+
+                String sql = "SELECT id, tematica, cantidad_participantes, "
+                                + "estado, process_instance_id "
+                                + "FROM cursos "
+                                + "WHERE empresa_id = ? "
+                                + "ORDER BY id DESC";
+
+                return jdbcTemplate.queryForList(sql, empresaId);
+        }
+
+        // Actualizar el estado de un curso asociado a una instancia
+        // de Flowable, verificando su estado anterior
+        public int actualizarEstadoCurso(
+                        String processInstanceId,
+                        String estadoAnterior,
+                        String nuevoEstado) {
+
+                String sql = "UPDATE cursos "
+                                + "SET estado = ? "
+                                + "WHERE process_instance_id = ? "
+                                + "AND estado = ?";
+
+                return jdbcTemplate.update(
+                                sql,
+                                nuevoEstado,
+                                processInstanceId,
+                                estadoAnterior);
+        }
+
+        // Guardar el informe de resultados del curso en formato PDF
+        public int guardarInforme(
+                        String processInstanceId,
+                        String informePdfBase64) {
+
+                String sql = "UPDATE cursos "
+                                + "SET informe_resultados_pdf = ? "
+                                + "WHERE process_instance_id = ?";
+
+                return jdbcTemplate.update(
+                                sql,
+                                informePdfBase64,
+                                processInstanceId);
+        }
+
+        // Guardar la fecha de inicio acordada con la empresa
+        public int guardarFechaAcordada(
+                        String processInstanceId,
+                        LocalDateTime fechaAcordada) {
+
+                String sql = "UPDATE cursos "
+                                + "SET fecha_inicio_acordada = ? "
+                                + "WHERE process_instance_id = ?";
+
+                return jdbcTemplate.update(
+                                sql,
+                                fechaAcordada,
+                                processInstanceId);
+        }
 }

@@ -1,5 +1,5 @@
 # Iniciar backend de Gestion de Cursos
-# Guardar este archivo en la raiz de proyecto-gestion-cursos-2026.
+# Guardar este archivo en la raiz del proyecto.
 
 $ErrorActionPreference = 'Stop'
 
@@ -32,15 +32,9 @@ if ($LASTEXITCODE -ne 0 -or $postgresRunning -ne 'true') {
     throw 'El contenedor flowable-postgres no esta en ejecucion.'
 }
 
-# Obtener la configuracion de PostgreSQL.
+# Configuracion local de PostgreSQL.
 
-$dbPassword = docker exec flowable-postgres printenv POSTGRES_PASSWORD
-
-if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($dbPassword)) {
-    throw 'No se pudo obtener la configuracion de PostgreSQL.'
-}
-
-$env:DB_PASSWORD = $dbPassword.Trim()
+$env:DB_PASSWORD = 'flowable'
 
 $env:SERVER_PORT = '8081'
 $env:SPRING_LIQUIBASE_ENABLED = 'false'
@@ -74,8 +68,6 @@ if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($secreto)) {
     throw 'El contenedor no tiene configurado el secreto de integracion.'
 }
 
-# Compatibilidad con ambas configuraciones del backend.
-
 $env:FLOWABLE_INTEGRATION_SECRET = $secreto.Trim()
 $env:INTEGRACION_FLOWABLE_SECRET = $secreto.Trim()
 
@@ -83,7 +75,7 @@ Write-Host 'Secreto de integracion configurado correctamente.'
 
 # Configuracion de Java y simulacion de credenciales.
 
-$env:JAVA_TOOL_OPTIONS = '-Duser.timezone=UTC -Dsimular.entrega.credenciales=true'
+$env:JAVA_TOOL_OPTIONS = '-Duser.timezone=America/Argentina/Buenos_Aires -Dsimular.entrega.credenciales=true'
 
 # Iniciar backend.
 

@@ -4,110 +4,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Panel docente - Institución de Capacitación</title>
-
     <link rel="stylesheet" href="/css/estilos.css">
     <link rel="stylesheet" href="/css/panel-administrativo.css">
 </head>
 
 <body>
-
     <div class="panel-layout">
-
         <!-- Menú lateral del docente -->
         <aside class="menu-lateral">
-
             <a href="/index.html" class="marca-panel">
                 <span>🎓</span>
                 <span>Institución de Capacitación</span>
             </a>
-
             <div class="usuario-panel">
                 <p class="usuario-rol">Personal docente</p>
                 <p class="usuario-nombre" id="usuario-nombre">Docente</p>
             </div>
-
             <nav class="navegacion-lateral">
                 <a href="#tareas" class="opcion-menu activa">
                     Mis tareas
                 </a>
             </nav>
-
         </aside>
-
         <main class="contenido-panel">
-
             <!-- Cabecera del panel -->
             <header class="cabecera-panel">
-
                 <div>
                     <h1>Panel docente</h1>
                     <p>Consulta y gestión de las tareas docentes asignadas.</p>
                 </div>
-
                 <div class="acciones-cabecera">
-
                     <span class="etiqueta-usuario">
                         Docencia
                     </span>
-
                     <button type="button" class="boton-cerrar-sesion" onclick="cerrarSesion()">
                         Cerrar sesión
                     </button>
-
                 </div>
-
             </header>
-
             <!-- Resumen de tareas docentes -->
             <section class="resumen-panel">
-
                 <div class="tarjeta-resumen">
                     <p>Tareas asignadas</p>
                     <h2 id="total-tareas">—</h2>
                 </div>
-
                 <div class="tarjeta-resumen">
                     <p>Cursos para desarrollar</p>
                     <h2 id="total-cursos">—</h2>
                 </div>
-
                 <div class="tarjeta-resumen">
                     <p>Otras tareas</p>
                     <h2 id="total-otras">—</h2>
                 </div>
-
             </section>
-
             <!-- Listado de tareas pendientes -->
             <section class="seccion-panel" id="tareas">
-
                 <div class="encabezado-seccion">
                     <h2>Mis tareas</h2>
                     <p>Actividades pendientes asignadas a tu usuario.</p>
                 </div>
-
                 <div class="filtros-tareas">
-
                     <div class="campo-filtro campo-busqueda">
-
                         <label for="buscar-tarea">Buscar</label>
-
                         <input type="search" id="buscar-tarea" placeholder="Buscar curso, empresa o tarea...">
-
                     </div>
-
                 </div>
-
                 <p id="cantidad-resultados" class="cantidad-resultados">
                     Cargando tareas...
                 </p>
-
                 <div class="tabla-contenedor">
-
                     <table class="tabla-tareas">
-
                         <thead>
                             <tr>
                                 <th>Tarea y curso</th>
@@ -115,42 +82,28 @@
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-
                         <tbody id="lista-tareas">
                             <tr>
                                 <td colspan="3">Cargando tareas...</td>
                             </tr>
                         </tbody>
-
                     </table>
-
                 </div>
-
             </section>
-
         </main>
-
     </div>
-
     <script>
-
         let usuarioActual = "";
         let todasLasTareas = [];
-
         // Verifica que exista una sesión de docente.
         async function verificarSesion() {
-
             const respuesta = await fetch("/api/auth/me");
-
             if (!respuesta.ok) {
                 window.location.replace("/pages/login.html");
                 return false;
             }
-
             const datos = await respuesta.json();
-
             if (datos.tipoUsuario !== "docente") {
-
                 if (datos.tipoUsuario === "administrativo") {
                     window.location.replace(
                         "/pages/panel-administrativo.html");
@@ -160,194 +113,138 @@
                 } else {
                     window.location.replace("/pages/login.html");
                 }
-
                 return false;
             }
-
             usuarioActual = datos.usuario;
-
             document.getElementById("usuario-nombre").textContent =
                 usuarioActual;
-
             return true;
         }
-
         // Consulta las tareas asignadas al docente.
         async function cargarTareas() {
-
             try {
-
                 const respuesta = await fetch("/api/tareas/mis-tareas");
-
                 if (respuesta.status === 401) {
                     window.location.replace("/pages/login.html");
                     return;
                 }
-
                 if (!respuesta.ok) {
                     throw new Error("No se pudieron consultar las tareas.");
                 }
-
                 const datos = await respuesta.json();
-
                 todasLasTareas = (datos.data || []).filter(
                     tarea => tarea.assignee === usuarioActual
                 );
-
                 actualizarResumen();
                 aplicarFiltros();
-
             } catch (error) {
-
                 console.error(error);
-
                 mostrarMensajeTabla(
                     "No se pudieron cargar las tareas de Flowable.");
-
                 document.getElementById("cantidad-resultados").textContent =
                     "Error al consultar las tareas.";
             }
         }
-
         // Actualiza los contadores del panel.
         function actualizarResumen() {
-
             const desarrollar = todasLasTareas.filter(
                 tarea => normalizarTexto(tarea.name) === "desarrollar curso"
             );
-
             const cursos = new Set(
                 desarrollar.map(tarea => tarea.processInstanceId)
             );
-
             document.getElementById("total-tareas").textContent =
                 todasLasTareas.length;
-
             document.getElementById("total-cursos").textContent =
                 cursos.size;
-
             document.getElementById("total-otras").textContent =
                 todasLasTareas.length - desarrollar.length;
         }
-
         // Normaliza el texto para facilitar las búsquedas.
         function normalizarTexto(texto) {
-
             return String(texto ?? "")
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "")
+                .replace(/\s+/g, " ")
                 .toLowerCase()
                 .trim();
         }
-
         // Filtra las tareas según el texto ingresado.
         function aplicarFiltros() {
-
             const busqueda = normalizarTexto(
                 document.getElementById("buscar-tarea").value
             );
-
             const tareasFiltradas = todasLasTareas.filter(tarea => {
-
                 const curso = tarea.curso || {};
-
                 const texto = normalizarTexto([
                     tarea.name,
                     curso.tematica,
                     curso.empresa,
                     curso.id
                 ].join(" "));
-
                 return texto.includes(busqueda);
             });
-
             document.getElementById("cantidad-resultados").textContent =
                 "Mostrando " + tareasFiltradas.length +
                 " de " + todasLasTareas.length + " tareas";
-
             mostrarTareas(tareasFiltradas);
         }
-
         // Muestra un mensaje cuando no hay tareas o existe un error.
         function mostrarMensajeTabla(mensaje) {
-
             const tabla = document.getElementById("lista-tareas");
-
             tabla.innerHTML = "";
-
             const fila = document.createElement("tr");
             const celda = document.createElement("td");
-
             celda.colSpan = 3;
             celda.className = "mensaje-tabla";
             celda.textContent = mensaje;
-
             fila.appendChild(celda);
             tabla.appendChild(fila);
         }
-
         // Crea un elemento de texto para la tabla.
         function crearTexto(clase, contenido) {
-
             const elemento = document.createElement("div");
-
             elemento.className = clase;
             elemento.textContent = contenido;
-
             return elemento;
         }
-
         // Muestra las tareas asignadas al docente.
         function mostrarTareas(tareas) {
-
             const tabla = document.getElementById("lista-tareas");
-
             tabla.innerHTML = "";
-
             if (tareas.length === 0) {
-
                 mostrarMensajeTabla(
                     todasLasTareas.length === 0
                         ? "No tenés tareas pendientes."
                         : "No se encontraron tareas con esa búsqueda."
                 );
-
                 return;
             }
-
             tareas.forEach(tarea => {
-
                 const fila = document.createElement("tr");
                 const curso = tarea.curso || {};
-
                 // Información de la tarea y del curso.
                 const informacion = document.createElement("td");
-
                 informacion.className = "informacion-tarea";
-
                 informacion.appendChild(
                     crearTexto(
                         "nombre-tarea tarea-general",
                         "📚 " + (tarea.name || "Sin nombre")
                     )
                 );
-
                 informacion.appendChild(
                     crearTexto(
                         "tematica-curso",
                         curso.tematica || "Curso no identificado"
                     )
                 );
-
                 informacion.appendChild(
                     crearTexto(
                         "empresa-curso",
                         curso.empresa || "Empresa no identificada"
                     )
                 );
-
                 if (curso.id != null) {
-
                     informacion.appendChild(
                         crearTexto(
                             "datos-curso",
@@ -358,140 +255,443 @@
                         )
                     );
                 }
-
                 // Estado de asignación de la tarea.
                 const estado = document.createElement("td");
-
                 estado.textContent = "Asignada";
-
                 // Acciones disponibles para la tarea.
                 const acciones = document.createElement("td");
-
                 const boton = document.createElement("button");
-
                 boton.type = "button";
                 boton.className = "boton-tarea boton-completar";
-
-                boton.textContent =
-                    normalizarTexto(tarea.name) === "desarrollar curso"
-                        ? "Finalizar desarrollo"
-                        : "Pendiente de implementar";
-
-                // Permitir completar únicamente las tareas de desarrollo.
+                const nombreTarea = normalizarTexto(tarea.name);
                 const esDesarrollo =
-                    normalizarTexto(tarea.name) === "desarrollar curso";
-
-                boton.disabled = !esDesarrollo;
-
+                    nombreTarea === "desarrollar curso";
+                const esSeleccionDocente =
+                    nombreTarea === "definir docente que desarrolla el curso";
                 if (esDesarrollo) {
+                    boton.textContent = "Finalizar desarrollo";
                     boton.addEventListener("click", () => {
                         completarDesarrollo(tarea, boton);
                     });
+                } else if (esSeleccionDocente) {
+                    boton.textContent = "Seleccionar docente";
+                    boton.addEventListener("click", () => {
+                        abrirModalDocentes(tarea);
+                    });
+                } else if (
+                    nombreTarea === "elaborar informe de resultados"
+                ) {
+                    boton.textContent = "Elaborar informe";
+
+                    boton.addEventListener("click", () => {
+                        abrirModalInforme(tarea);
+                    });
+
+                } else {
+                    boton.textContent = "Pendiente de implementar";
+                    boton.disabled = true;
                 }
-
                 acciones.appendChild(boton);
-
                 fila.appendChild(informacion);
                 fila.appendChild(estado);
                 fila.appendChild(acciones);
-
                 tabla.appendChild(fila);
             });
         }
+        // Abre el formulario para seleccionar un docente.
+        async function abrirModalDocentes(tarea) {
+            try {
+                const respuesta = await fetch("/api/docentes");
+                const datos = await respuesta.json();
+                if (!respuesta.ok) {
+                    throw new Error(
+                        datos.error || "No se pudieron consultar los docentes."
+                    );
+                }
+                const docentes = datos.data || [];
+                if (docentes.length === 0) {
+                    alert("No hay docentes disponibles para seleccionar.");
+                    return;
+                }
+                const modal = document.createElement("dialog");
+                modal.style.cssText = `
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 24px;
+            width: 420px;
+            max-width: 90%;
+        `;
+                modal.innerHTML = `
+            <h2>Seleccionar docente</h2>
+            <p>Elegí el docente responsable del desarrollo del curso.</p>
+            <label for="docente-seleccionado">
+                Docente responsable
+            </label>
+            <select id="docente-seleccionado"
+                    style="width: 100%; padding: 10px; margin: 12px 0;">
+                <option value="">Seleccionar docente...</option>
+            </select>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="button"
+                        id="confirmar-docente"
+                        class="boton-tarea boton-completar">
+                    Confirmar selección
+                </button>
+                <button type="button"
+                        id="cancelar-docente"
+                        class="boton-tarea">
+                    Cancelar
+                </button>
+            </div>
+        `;
+                const selector = modal.querySelector(
+                    "#docente-seleccionado"
+                );
+                docentes.forEach(docente => {
+                    if (!docente.id) {
+                        return;
+                    }
+                    const opcion = document.createElement("option");
+                    opcion.value = docente.id;
+                    const nombreCompleto = [
+                        docente.firstName,
+                        docente.lastName
+                    ].filter(Boolean).join(" ");
+                    opcion.textContent = nombreCompleto
+                        ? `${nombreCompleto} (${docente.id})`
+                        : docente.id;
+                    selector.appendChild(opcion);
+                });
+                modal.querySelector("#cancelar-docente")
+                    .addEventListener("click", () => {
+                        modal.close();
+                    });
+                modal.querySelector("#confirmar-docente")
+                    .addEventListener("click", async () => {
+                        const docenteSeleccionado = selector.value;
+                        if (!docenteSeleccionado) {
+                            alert("Debés seleccionar un docente.");
+                            return;
+                        }
+                        await completarSeleccionDocente(
+                            tarea,
+                            docenteSeleccionado,
+                            modal
+                        );
+                    });
+                modal.addEventListener("close", () => {
+                    modal.remove();
+                });
+                document.body.appendChild(modal);
+                modal.showModal();
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        }
+        // Envía el docente seleccionado al backend.
+        async function completarSeleccionDocente(
+            tarea,
+            docenteSeleccionado,
+            modal
+        ) {
+            const boton = modal.querySelector("#confirmar-docente");
+            const cancelar = modal.querySelector("#cancelar-docente");
+            boton.disabled = true;
+            cancelar.disabled = true;
+            boton.textContent = "Confirmando...";
+            try {
+                const respuesta = await fetch(
+                    `/api/tareas/${encodeURIComponent(tarea.id)}/completar-docente`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            docenteSeleccionado: docenteSeleccionado
+                        })
+                    }
+                );
+                const datos = await respuesta.json();
+                if (!respuesta.ok) {
+                    throw new Error(
+                        datos.error || "No se pudo seleccionar el docente."
+                    );
+                }
+                modal.close();
+                alert("Docente seleccionado correctamente.");
+                await cargarTareas();
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+                boton.disabled = false;
+                cancelar.disabled = false;
+                boton.textContent = "Confirmar selección";
+            }
+        }
         // Completa la tarea de desarrollo asignada al docente.
         async function completarDesarrollo(tarea, boton) {
-
             const confirmado = confirm(
                 "¿Confirmás que finalizaste el desarrollo del curso?"
             );
-
             if (!confirmado) {
                 return;
             }
-
             boton.disabled = true;
             boton.textContent = "Finalizando...";
-
             try {
-
                 const respuesta = await fetch(
                     `/api/tareas/${encodeURIComponent(tarea.id)}/completar`,
                     {
                         method: "POST"
                     }
                 );
-
                 const datos = await respuesta.json();
-
                 if (!respuesta.ok) {
                     throw new Error(
                         datos.error || "No se pudo completar la tarea."
                     );
                 }
-
                 alert("El desarrollo del curso se completó correctamente.");
-
                 // Actualizar las tareas pendientes y los contadores.
                 await cargarTareas();
-
             } catch (error) {
-
                 console.error(error);
                 alert(error.message);
-
                 boton.disabled = false;
                 boton.textContent = "Finalizar desarrollo";
             }
         }
 
-        // Cierra la sesión y vuelve al inicio de sesión.
-        async function cerrarSesion() {
+        function abrirModalInforme(tarea) {
 
-            try {
+            const modal = document.createElement("dialog");
 
-                const respuesta = await fetch("/api/auth/logout", {
-                    method: "POST"
+            modal.style.cssText = `
+        width: 90%;
+        max-width: 650px;
+        border: none;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 10px 40px #0004;
+    `;
+
+            modal.innerHTML = `
+        <h2>Elaborar informe de resultados</h2>
+
+        <p>
+            Escribí el informe o adjuntá un archivo PDF.
+        </p>
+
+        <label for="texto-informe">
+            Informe de resultados
+        </label>
+
+        <textarea
+            id="texto-informe"
+            rows="10"
+            placeholder="Ingresá los resultados del curso..."
+            style="
+                width: 100%;
+                box-sizing: border-box;
+                padding: 12px;
+                margin: 10px 0;
+                resize: vertical;
+            "
+        ></textarea>
+
+        <label for="archivo-informe">
+            Adjuntar PDF (opcional)
+        </label>
+
+        <input
+            id="archivo-informe"
+            type="file"
+            accept=".pdf,application/pdf"
+            style="display:block; margin:15px 0;"
+        >
+
+        <small>Tamaño máximo: 5 MB.</small>
+
+        <div style="
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+            margin-top:25px;
+        ">
+
+            <button
+                type="button"
+                id="cancelar-informe"
+                class="boton-tarea"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                id="confirmar-informe"
+                class="boton-tarea boton-completar"
+            >
+                Guardar y finalizar
+            </button>
+
+        </div>
+    `;
+
+            document.body.appendChild(modal);
+
+            modal.addEventListener("close", () => {
+                modal.remove();
+            });
+
+            modal.querySelector("#cancelar-informe")
+                .addEventListener("click", () => {
+                    modal.close();
                 });
 
-                if (!respuesta.ok) {
-                    throw new Error("No se pudo cerrar la sesión.");
-                }
+            modal.querySelector("#confirmar-informe")
+                .addEventListener("click", () => {
+                    completarInforme(tarea, modal);
+                });
 
-                window.location.replace("/pages/login.html");
-
-            } catch (error) {
-
-                alert(error.message);
-            }
+            modal.showModal();
         }
 
 
-        // Inicializa el panel después de verificar la sesión.
-        async function iniciarPanel() {
+        function convertirArchivoBase64(archivo) {
+
+            return new Promise((resolve, reject) => {
+
+                const lector = new FileReader();
+
+                lector.onload = () => {
+                    resolve(lector.result.split(",")[1]);
+                };
+
+                lector.onerror = () => {
+                    reject(new Error("No se pudo leer el archivo."));
+                };
+
+                lector.readAsDataURL(archivo);
+            });
+        }
+
+
+        async function completarInforme(tarea, modal) {
+
+            const informe = modal
+                .querySelector("#texto-informe")
+                .value.trim();
+
+            const archivo = modal
+                .querySelector("#archivo-informe")
+                .files[0];
+
+            const boton = modal
+                .querySelector("#confirmar-informe");
+
+            const cancelar = modal
+                .querySelector("#cancelar-informe");
+
+            if (!informe && !archivo) {
+
+                alert("Debés escribir un informe o adjuntar un PDF.");
+                return;
+            }
+
+            if (archivo && archivo.size > 5 * 1024 * 1024) {
+
+                alert("El archivo no puede superar los 5 MB.");
+                return;
+            }
+
+            boton.disabled = true;
+            cancelar.disabled = true;
+            boton.textContent = "Guardando...";
 
             try {
 
-                if (await verificarSesion()) {
-                    await cargarTareas();
+                let pdfBase64 = "";
+
+                if (archivo) {
+
+                    pdfBase64 =
+                        await convertirArchivoBase64(archivo);
                 }
+
+                const respuesta = await fetch(
+                    `/api/tareas/${encodeURIComponent(tarea.id)}/completar-informe`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            informeResultados: informe,
+                            informePdfBase64: pdfBase64
+                        })
+                    }
+                );
+
+                const datos = await respuesta.json();
+
+                if (!respuesta.ok) {
+
+                    throw new Error(
+                        datos.error || "No se pudo guardar el informe."
+                    );
+                }
+
+                modal.close();
+
+                alert("Informe guardado correctamente.");
+
+                await cargarTareas();
 
             } catch (error) {
 
                 console.error(error);
 
+                alert(error.message);
+
+                boton.disabled = false;
+                cancelar.disabled = false;
+                boton.textContent = "Guardar y finalizar";
+            }
+        }
+        // Cierra la sesión y vuelve al inicio de sesión.
+        async function cerrarSesion() {
+            try {
+                const respuesta = await fetch("/api/auth/logout", {
+                    method: "POST"
+                });
+                if (!respuesta.ok) {
+                    throw new Error("No se pudo cerrar la sesión.");
+                }
+                window.location.replace("/pages/login.html");
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+        // Inicializa el panel después de verificar la sesión.
+        async function iniciarPanel() {
+            try {
+                if (await verificarSesion()) {
+                    await cargarTareas();
+                }
+            } catch (error) {
+                console.error(error);
                 mostrarMensajeTabla(
                     "No se pudo verificar la sesión.");
             }
         }
-
         // Actualiza el listado cuando cambia la búsqueda.
         document.getElementById("buscar-tarea")
             .addEventListener("input", aplicarFiltros);
-
         iniciarPanel();
-
     </script>
-
 </body>
 
 </html>
