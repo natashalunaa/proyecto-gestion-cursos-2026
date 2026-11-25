@@ -8,7 +8,7 @@ df = pd.read_csv(CARPETA / "eventos.csv", dtype=str)
 
 if df.empty:
     print("No hay eventos históricos para analizar.")
-    print("Primero deben ejecutarse instancias de Process_Curso.")
+    print("Primero deben ejecutarse instancias de process-proyecto-curso.")
     raise SystemExit(0)
 
 # Conservar las actividades relevantes de la negociación.

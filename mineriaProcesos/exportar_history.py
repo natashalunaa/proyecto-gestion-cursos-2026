@@ -10,7 +10,7 @@ import psycopg2
 # Configuración
 BASE_URL = "http://localhost:8080/flowable-ui/process-api"
 
-PROCESS_KEY = "Process_Curso"
+PROCESS_KEY = "process-proyecto-curso"
 
 ACTIVIDADES = {
     "Inicio",

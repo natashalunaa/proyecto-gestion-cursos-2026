@@ -19,7 +19,7 @@ public class App {
             List<HistoricProcessInstance> instancias =
                     flowable.getHistoryService()
                             .createHistoricProcessInstanceQuery()
-                            .processDefinitionKey("Process_Curso")
+                            .processDefinitionKey("process-proyecto-curso")
                             .finished()
                             .list();
 

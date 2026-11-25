@@ -49,7 +49,7 @@ public class FlowableService {
         public String iniciarProceso(SolicitudCurso solicitud) throws Exception {
 
                 Map<String, Object> datos = Map.of(
-                                "processDefinitionKey", "Process_Curso",
+                                "processDefinitionKey", "process-proyecto-curso",
                                 "variables", List.of(
                                                 Map.of(
                                                                 "name", "tematica",

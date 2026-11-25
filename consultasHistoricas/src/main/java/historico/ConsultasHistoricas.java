@@ -18,7 +18,7 @@ public class ConsultasHistoricas {
 
     private final HistoryService historyService;
 
-    private static final String PROCESO = "Process_Curso";
+    private static final String PROCESO = "process-proyecto-curso";
 
     public ConsultasHistoricas(HistoryService historyService) {
         this.historyService = historyService;
